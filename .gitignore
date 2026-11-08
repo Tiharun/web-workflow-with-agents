@@ -1,0 +1,23 @@
+# 환경변수 (비밀값)
+.env
+.env.*
+!.env.example
+
+# 의존성
+node_modules/
+
+# 브라우저 세션·쿠키 상태 파일
+playwright/.auth/
+.auth/
+*.storage-state.json
+storageState.json
+auth.json
+*-auth.json
+*.auth.json
+*.state.json
+*.json.enc
+.agent-browser/
+.playwright-mcp/
+browser-profile/
+# 그림 제작 규칙 (로컬 전용, 배포 안 함)
+docs/웹 비주얼 디자인 v3 작업 규칙.md
