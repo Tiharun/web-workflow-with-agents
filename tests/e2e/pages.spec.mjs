@@ -33,3 +33,22 @@ test('footer link to current guide returns to top', async ({ page }) => {
   await page.locator('footer.site-footer').getByRole('link', { name: '최종 워크플로우' }).click();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
 });
+
+for (const p of pages) {
+  test(`${p.name} has the shared header`, async ({ page }) => {
+    await openPage(page, p.path);
+    const h = page.locator('header.site-header');
+    await expect(h.locator('.brand')).toHaveText(siteConfig.site.name);
+    await expect(h.locator('.guide-nav__btn')).toHaveText(siteConfig.guides.map((g) => g.menuLabel));
+    await expect(h.locator('.mode-toggle')).toBeVisible();
+  });
+}
+test('404 header mega menu loads stages', async ({ page }) => {
+  await openPage(page, '/404.html');
+  await page.locator('.guide-nav__btn[data-guide="final"]').click();
+  const link = page.locator('#mega-final a.mega__stage').first();
+  await expect(link).toBeVisible();
+  await link.click();
+  await expect(page).toHaveURL(/\/#\/final\//);
+  await expect(page.locator('.doc:not([aria-busy]) h1')).toBeVisible();
+});
