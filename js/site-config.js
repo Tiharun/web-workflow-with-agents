@@ -3,7 +3,7 @@
 export const siteConfig = {
   site: {
     name: '웹사이트 제작 워크플로우',
-    url: '', // GitHub Pages를 켠 뒤 실제 주소로 채운다.
+    url: 'https://tiharun.github.io/web-workflow-with-agents/',
     repoUrl: 'https://github.com/Tiharun/web-workflow-with-agents',
     branch: 'main',
   },

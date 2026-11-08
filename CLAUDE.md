@@ -11,7 +11,9 @@
 ## 명령
 - 실행: `python -m http.server 8000 --bind 127.0.0.1` → http://127.0.0.1:8000 (`.claude/launch.json`의 `static`)
 - 빌드: 없음(파일을 그대로 배포)
-- 테스트(자동 단위 테스트 없음, 아래로 대신):
+- 테스트:
+  - `npm test` — 단위(node:test) + e2e(Playwright). 테스트 서버는 `tests/serve.py`가 8123 포트로 자동 실행
+  - `npm run test:visual` — 시각 기준 대조(375·768·1280·1440 × 라이트·다크, Windows 기준 이미지). 갱신: `npm run test:visual -- --update-snapshots`
   - 슬롭 검사: `node ~/.claude/skills/hallmark/scripts/sloplint.mjs css/site.css index.html --genre modern-minimal --scope app`
   - 디자인 검사: `impeccable detect --json <파일>`
   - 브라우저: 콘솔 오류 0, Lighthouse 성능·접근성 90 이상(chrome-devtools-mcp)
@@ -23,8 +25,8 @@
 - `PRODUCT.md` — 사용자·톤·접근성 목표 등 제품 맥락
 - `DESIGN.md` — 색·글꼴·간격·모서리·그림자·컴포넌트 규칙(값은 `css/tokens.css`)
 - `.impeccable/design.json` — DESIGN.md 사이드카(그림자·모션·브레이크포인트)
-- `docs/specs/` — 기능 명세(아직 없음, 만들면 이 경로)
-- `docs/plans/` — 구현 계획(아직 없음, 만들면 이 경로)
+- `docs/specs/` — 기능 명세(`2026-11-08-guide-site-design.md`)
+- `docs/plans/` — 구현 계획(`2026-11-08-m0-skeleton-deploy.md`)
 
 ## 규칙
 1. 색·글꼴은 DESIGN.md와 `css/tokens.css`의 토큰만 쓴다. 토큰 블록 밖에 색 값·`font-family`를 직접 쓰지 않는다. 새 값이 필요하면 DESIGN.md부터 고친다

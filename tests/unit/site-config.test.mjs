@@ -25,3 +25,7 @@ test('every visual points at a known guide', () => {
   const ids = new Set(siteConfig.guides.map((g) => g.id));
   for (const v of siteConfig.visuals) assert.ok(ids.has(v.guideId), v.guideId);
 });
+
+test('deploy url is the project Pages address', () => {
+  assert.equal(siteConfig.site.url, 'https://tiharun.github.io/web-workflow-with-agents/');
+});
