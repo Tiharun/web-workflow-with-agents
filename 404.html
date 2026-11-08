@@ -13,11 +13,17 @@
       var base = /\.github\.io$/.test(location.hostname) && seg ? '/' + seg + '/' : '/';
       var b = document.createElement('base'); b.href = base; document.head.appendChild(b);
       try { var m = localStorage.getItem('mode'); if (m === 'dark' || m === 'light') document.documentElement.dataset.mode = m; } catch (e) {}
+      // 주소를 마크업에 그대로 두면 브라우저가 <base>를 알기 전에 미리 받아 깊은 경로에서 404가 난다.
+      // 파서에 직접 넣어 기준 주소로 풀리게 한다(스타일시트는 렌더 차단, 모듈은 지연 실행이 유지된다).
+      document.write('<link rel="stylesheet" href="vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css">'
+        + '<link rel="stylesheet" href="css/site.css">'
+        + '<script type="module" src="js/not-found-page.js"><\/script>');
     })();
   </script>
-  <script type="module" src="js/not-found-page.js"></script>
-  <link rel="stylesheet" href="vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css">
-  <link rel="stylesheet" href="css/site.css">
+  <noscript>
+    <link rel="stylesheet" href="vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css">
+    <link rel="stylesheet" href="css/site.css">
+  </noscript>
 </head>
 <body>
   <header class="site-header" id="site-header">

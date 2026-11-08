@@ -25,8 +25,22 @@ for (const p of pages) {
 test('footer does not overflow at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await openPage(page, '/#/');
-  const over = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
-  expect(over).toBeLessThanOrEqual(0);
+  // html·body가 overflow-x: clip이라 문서 폭으로는 넘침이 드러나지 않는다. 푸터 요소마다 오른쪽 끝을 잰다.
+  const right = await page.evaluate(() => Math.max(...[...document.querySelectorAll('.site-footer *')].map((e) => e.getBoundingClientRect().right)));
+  expect(right).toBeLessThanOrEqual(375);
+});
+test('re-clicking the current stage link (Korean id) scrolls back to it', async ({ page }) => {
+  await openPage(page, '/#/final');
+  const open = () => page.locator('.guide-nav__btn[data-guide="final"]').click();
+  const stage = page.locator('#mega-final a.mega__stage').nth(2);
+  await open();
+  await stage.click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(500);
+  const y = await page.evaluate(() => scrollY);
+  await page.evaluate(() => scrollTo(0, 0));
+  await open();
+  await stage.click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(y);
 });
 test('footer link to current guide returns to top', async ({ page }) => {
   await openPage(page, '/#/final');

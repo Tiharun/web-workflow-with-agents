@@ -78,7 +78,8 @@ document.addEventListener('click', (e) => {
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   if (a.hasAttribute('data-smooth')) smoothNext = true;
   // 같은 주소를 다시 누르면(예: 푸터의 현재 가이드 링크) hashchange가 없으므로 직접 이동한다.
-  if (a.getAttribute('href') === location.hash) { e.preventDefault(); route(); }
+  // a.hash·location.hash 모두 퍼센트 인코딩된 값이라 한글 단계 id도 그대로 비교된다.
+  if (a.hash === location.hash) { e.preventDefault(); route(); }
 });
 
 // 본문 바로가기: 해시를 쓰지 않고 초점만 옮긴다(해시는 라우터 몫).
