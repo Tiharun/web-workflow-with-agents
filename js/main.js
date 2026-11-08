@@ -1,3 +1,123 @@
-import { siteConfig } from './site-config.js';
+// 앱 시작: 헤더, 해시 라우터(#/, #/<가이드>, #/<가이드>/<제목 id>, 그 밖은 찾을 수 없음), 복사 버튼.
+import { siteConfig, guideById } from './site-config.js';
+import { initHeader, setCurrentGuide, closeMenus } from './header.js';
+import { initTooltips } from './tooltip.js';
+import { renderHome } from './home.js';
+import { renderGuide, scrollToStage } from './guide.js';
+import { loadGuide } from './md.js';
+import { icon } from './icons.js';
 
-document.title = siteConfig.site.name;
+const { ui, site, guides } = siteConfig;
+const main = document.getElementById('main');
+let view = { name: null, guideId: null };
+let cleanup = () => {};
+let smoothNext = false;
+
+document.title = site.name;
+initHeader(document.getElementById('site-header'));
+initTooltips();
+
+/** '#/final/0단계-준비' → { name: 'guide', guide, stageId } */
+function parse(hash) {
+  let path = hash.replace(/^#\/?/, '');
+  try { path = decodeURIComponent(path); } catch { /* 깨진 주소는 그대로 판정 */ }
+  const [first = '', ...rest] = path.split('/').filter(Boolean);
+  if (!first) return { name: 'home' };
+  const guide = guideById(first);
+  if (!guide) return { name: 'notfound' };
+  return { name: 'guide', guide, stageId: rest.join('/') || null };
+}
+
+async function route() {
+  const next = parse(location.hash);
+  const smooth = smoothNext;
+  smoothNext = false;
+  closeMenus();
+  setCurrentGuide(next.guide?.id ?? null);
+
+  if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('.doc:not([aria-busy])')) {
+    scrollToStage(main, next.stageId, smooth);
+    return;
+  }
+
+  cleanup();
+  cleanup = () => {};
+  view = { name: next.name, guideId: next.guide?.id ?? null };
+  document.documentElement.dataset.view = next.name;
+
+  if (next.name === 'home') {
+    cleanup = renderHome(main);
+    scrollTo({ top: 0, behavior: 'instant' });
+  } else if (next.name === 'guide') {
+    const done = await renderGuide(main, next.guide, next.stageId, { smooth });
+    if (view.guideId === next.guide.id) cleanup = done;
+    else done();
+  } else {
+    renderNotFound();
+    scrollTo({ top: 0, behavior: 'instant' });
+  }
+}
+
+function renderNotFound() {
+  document.title = `${ui.notFoundTitle} | ${site.name}`;
+  main.innerHTML = `
+    <div class="container state state--notfound">
+      <h1 class="state__title">${ui.notFoundTitle}</h1>
+      <p>${ui.notFoundBody}</p>
+      <ul class="state__links" role="list">
+        ${guides.map((g) => `<li><a class="state__link" href="#/${g.id}"><span>${g.menuLabel}</span>${icon('right')}</a></li>`).join('')}
+      </ul>
+    </div>`;
+}
+
+// 메가메뉴·목차·단계 자에서 누른 이동만 부드럽게 스크롤한다.
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a[data-smooth]');
+  if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+  smoothNext = true;
+  // 같은 주소를 다시 누르면 hashchange가 없으므로 직접 이동한다.
+  if (a.getAttribute('href') === location.hash) { e.preventDefault(); route(); }
+});
+
+// 본문 바로가기: 해시를 쓰지 않고 초점만 옮긴다(해시는 라우터 몫).
+document.querySelector('.skip-link').addEventListener('click', (e) => {
+  e.preventDefault();
+  const target = main.querySelector('h1') ?? main;
+  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+  target.focus();
+});
+
+// 프롬프트 카드 복사
+const live = document.getElementById('live');
+document.addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-copy]');
+  if (!btn) return;
+  const text = btn.closest('.prompt')?.querySelector('code')?.textContent ?? '';
+  let ok = true;
+  try { await navigator.clipboard.writeText(text); } catch { ok = fallbackCopy(text); }
+  const label = btn.querySelector('[data-copy-label]');
+  btn.classList.toggle('is-done', ok);
+  label.textContent = ok ? ui.copied : ui.copyFailed;
+  live.textContent = label.textContent;
+  clearTimeout(btn._t);
+  btn._t = setTimeout(() => { label.textContent = ui.copy; btn.classList.remove('is-done'); live.textContent = ''; }, 1800);
+});
+
+function fallbackCopy(text) {
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.className = 'visually-hidden';
+  document.body.append(area);
+  area.select();
+  let ok = false;
+  try { ok = document.execCommand('copy'); } catch { ok = false; }
+  area.remove();
+  return ok;
+}
+
+addEventListener('hashchange', route);
+route();
+
+// 첫 화면 뒤 한가할 때 나머지 md를 미리 받아 둔다(메가메뉴가 바로 열리게).
+(window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1200)))(() => guides.forEach((g) => loadGuide(g).catch(() => {})));

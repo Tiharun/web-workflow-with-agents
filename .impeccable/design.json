@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 2,
+  "name": "웹사이트 제작 워크플로우",
+  "source": ["css/tokens.css", "css/base.css", "css/site.css", "js/motion.js"],
+  "extensions": {
+    "colorMeta": {
+      "accent": { "role": "primary", "light": "#2563eb", "dark": "#6ea8fe", "tonalRamp": { "50": "#eff6ff", "300": "#93c5fd", "600": "#2563eb", "700": "#1d4ed8", "800": "#1e40af", "900": "#1e3a8a" } },
+      "neutral": { "role": "neutral", "tonalRamp": { "50": "#f8fafc", "100": "#f1f5f9", "200": "#e2e8f0", "300": "#cbd5e1", "400": "#94a3b8", "500": "#64748b", "600": "#475569", "700": "#334155", "800": "#1e293b", "900": "#0f172a" } },
+      "note": { "role": "semantic-success", "light": "oklch(0.95 0.075 158)", "dark": "oklch(0.29 0.055 160)", "tonalRamp": { "fill": "oklch(0.95 0.075 158)", "fold": "oklch(0.87 0.11 158)", "edge": "oklch(0.80 0.12 158)", "ink": "oklch(0.40 0.10 158)" } },
+      "warn": { "role": "semantic-warning", "light": "#b45309", "dark": "#fbbf24", "tonalRamp": { "wash": "#fffbeb", "rule": "#fcd34d", "ink": "#b45309" } },
+      "contrast": { "body-on-paper": "13.98:1", "link-on-paper": "4.94:1", "primary-button-text": "5.17:1", "pass-title-light": "7.77:1", "pass-body-light": "13.03:1", "pass-title-dark": "9.43:1", "pass-body-dark": "11.13:1" }
+    },
+    "typographyMeta": {
+      "families": { "display": "\"Inter Variable\", \"Pretendard Variable\", system-ui, sans-serif", "body": "\"Inter Variable\", \"Pretendard Variable\", system-ui, sans-serif", "outlier": "ui-monospace, \"SF Mono\", Consolas, \"Pretendard Variable\", monospace" },
+      "scale": { "xs": "0.8125rem", "sm": "0.9375rem", "md": "1.0625rem", "lg": "1.1875rem", "xl": "1.3125rem", "2xl": "1.6875rem", "3xl": "2.4375rem" },
+      "fluid": { "display": "clamp(1.9375rem, 1.45rem + 2.1vw, 2.4375rem)", "section": "clamp(1.4375rem, 1.2rem + 1vw, 1.6875rem)", "title": "clamp(1.1875rem, 1.1rem + 0.4vw, 1.3125rem)", "lead": "1.1875rem", "figure": "clamp(2rem, 1.4rem + 2.4vw, 3rem)" },
+      "under40rem": { "display": "1.9375rem", "section": "1.5rem", "title": "1.1875rem", "figure": "2.25rem" },
+      "leading": { "body": 1.55, "head": 1.3, "lead": 1.65 },
+      "displayWeight": 650,
+      "trackingDisplay": "-0.02em",
+      "wordBreak": "keep-all"
+    },
+    "shadows": {
+      "card": { "light": "0 1px 2px rgb(15 23 42 / 0.06)", "dark": "none" },
+      "key": { "light": "0 2px 0 0 var(--color-key-edge), 0 4px 8px -4px rgb(15 23 42 / 0.22)", "dark": "0 2px 0 0 var(--color-key-edge)" },
+      "key-accent": { "light": "0 2px 0 0 var(--color-accent-edge), 0 6px 10px -6px rgb(30 64 175 / 0.5)", "dark": "none" },
+      "key-press": { "light": "inset 0 1px 2px rgb(15 23 42 / 0.14)", "dark": "none" },
+      "panel": { "light": "0 18px 40px -18px rgb(15 23 42 / 0.28)", "dark": "0 0 0 1px var(--color-rule-2)" },
+      "lift": { "light": "0 14px 28px -16px rgb(30 64 175 / 0.45)", "dark": "0 14px 28px -16px rgb(0 0 0 / 0.6)" },
+      "feature": { "light": "0 18px 36px -22px rgb(30 64 175 / 0.6)", "dark": "none" },
+      "glass-header": "background: color-mix(in oklab, var(--color-paper) 82%, transparent); backdrop-filter: blur(14px) saturate(1.2)"
+    },
+    "motion": {
+      "easing": { "out": "cubic-bezier(0.16, 1, 0.3, 1)", "in": "cubic-bezier(0.7, 0, 0.84, 0)", "in-out": "cubic-bezier(0.65, 0, 0.35, 1)" },
+      "duration": { "micro": "120ms", "short": "220ms", "long": "420ms" },
+      "keyframes": {
+        "drop": "from { opacity: 0; transform: translateY(-6px) }",
+        "pulse": "50% { opacity: 0.45 }"
+      },
+      "usage": {
+        "color-change": "var(--dur-micro) var(--ease-out)",
+        "button-press": "transform var(--dur-micro) var(--ease-out); hover translateY(-1px), active translateY(1px)",
+        "card-lift": "translateY(-3px) + --shadow-lift, @media (hover: hover)",
+        "chevron": "rotate(180deg) var(--dur-short)",
+        "mega-panel": "drop var(--dur-short) var(--ease-out)",
+        "ruler-tick-hover": "scaleY(1.45) var(--dur-short)",
+        "toc-drawer-open": "slide-in var(--dur-long) var(--ease-out)",
+        "toc-drawer-close": "slide-out var(--dur-short) var(--ease-in-out)",
+        "skeleton": "pulse 1.4s var(--ease-in-out) infinite"
+      },
+      "gsap": {
+        "version": "3.15.0",
+        "reveal": { "filter": "top > innerHeight * 0.92", "from": { "opacity": 0, "y": 28 }, "to": { "duration": 0.9, "ease": "expo.out", "stagger": 0.08 }, "trigger": { "start": "top 92%", "once": true } },
+        "drawRuler": [
+          { "target": "--draw", "from": 0, "to": 1, "duration": 1.1, "ease": "power3.inOut", "at": 0 },
+          { "target": "--tick", "from": 0, "to": 1, "duration": 0.6, "stagger": 0.06, "ease": "expo.out", "at": 0.25 },
+          { "target": ".ruler__num", "from": { "opacity": 0, "y": 8 }, "duration": 0.6, "stagger": 0.06, "at": 0.3 },
+          { "target": ".ruler__name", "from": { "opacity": 0 }, "duration": 0.6, "stagger": 0.04, "at": 0.6 },
+          { "target": ".ruler__loop", "from": { "opacity": 0, "y": 6 }, "duration": 0.7, "at": 0.9 }
+        ]
+      },
+      "reducedMotion": "animation-duration / transition-duration 0.01ms; GSAP 연출은 실행하지 않는다"
+    },
+    "breakpoints": {
+      "40rem": "max-width: 거터 16px, 섹션 간격 56/72/96, 열 간격 16px, 고정 글자 크기",
+      "47.99rem": "max-width: 헤더 56px, 가이드 메뉴 숨김 → 메뉴 버튼 + 시트",
+      "48rem": "min-width: 히어로 여백 64/40px, 입구 카드 2열",
+      "60rem": "max-width: 거터 24px, 섹션 간격 80/96/120",
+      "80rem": "min-width: 히어로 5fr:7fr 두 열, 카드 여백 40px, 가이드 3열",
+      "container-40rem": "단계 자 컨테이너 쿼리: 숫자 1.0625rem, 단계 이름 표시"
+    },
+    "layout": { "container": "1440px", "gutter": "64px", "gapColumns": "32px", "sectionGap": { "s": "120px", "m": "144px", "l": "176px" }, "measure": "46rem", "headerH": "64px" },
+    "zIndex": { "base": 1, "raised": 10, "dropdown": 100, "sticky": 200, "sticky-nav": 300, "modal": 400, "toast": 500, "tooltip": 600 }
+  },
+  "components": [
+    {
+      "name": "ds-btn",
+      "label": "키 버튼 (기본·강조)",
+      "html": "<div class=\"ds-row\"><button class=\"ds-btn\">처음부터 보기</button><button class=\"ds-btn ds-btn--primary\">0단계 시작</button></div>",
+      "css": ".ds-row{display:flex;gap:var(--space-sm);flex-wrap:wrap}.ds-btn{display:inline-flex;align-items:center;min-height:44px;padding:0 var(--space-lg);border:var(--rule-hair) solid var(--color-key-edge);border-radius:var(--radius-button);background:var(--color-key-face);color:var(--color-ink);font:600 var(--text-md)/1 var(--font-body);box-shadow:var(--shadow-key);cursor:pointer;transition:transform var(--dur-micro) var(--ease-out),background-color var(--dur-micro) var(--ease-out),box-shadow var(--dur-micro) var(--ease-out)}.ds-btn:hover{background:var(--color-paper-2);transform:translateY(-1px)}.ds-btn:active{transform:translateY(1px);box-shadow:var(--shadow-key-press)}.ds-btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px}.ds-btn--primary{border-color:var(--color-accent-edge);background:var(--color-accent);color:var(--color-accent-ink);box-shadow:var(--shadow-key-accent)}.ds-btn--primary:hover{background:var(--color-accent-deep)}"
+    },
+    {
+      "name": "ds-card",
+      "label": "잎 모양 입구 카드",
+      "html": "<a class=\"ds-card\" href=\"#\"><h3 class=\"ds-card__title\">프롬프트 모음</h3><p class=\"ds-card__text\">단계마다 복사해 쓰는 지시문.</p><span class=\"ds-card__num\">24</span></a>",
+      "css": ".ds-card{display:flex;flex-direction:column;gap:var(--space-xl);padding:var(--space-lg);border:var(--rule-hair) solid var(--color-rule-2);border-radius:var(--cut-l) 4px;background:var(--color-surface);color:var(--color-ink);box-shadow:var(--shadow-card);text-decoration:none;transition:transform var(--dur-short) var(--ease-out),border-color var(--dur-micro) var(--ease-out),box-shadow var(--dur-short) var(--ease-out)}.ds-card:hover{border-color:var(--color-accent)}@media (hover:hover){.ds-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lift,0 14px 28px -16px rgb(30 64 175 / .45))}}.ds-card:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px}.ds-card__title{margin:0;font:var(--display-weight) var(--text-title)/1.3 var(--font-display);letter-spacing:var(--tracking-display)}.ds-card__text{margin:0;color:var(--color-ink-2);line-height:1.6}.ds-card__num{font:650 var(--text-section)/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}"
+    },
+    {
+      "name": "ds-feature",
+      "label": "코발트 강조 카드 (화면당 하나)",
+      "html": "<a class=\"ds-feature\" href=\"#\"><h3 class=\"ds-feature__title\">최종 워크플로우</h3><span class=\"ds-feature__num\">0~10</span></a>",
+      "css": ".ds-feature{position:relative;display:flex;justify-content:space-between;align-items:flex-end;gap:var(--space-xl);padding:var(--space-lg) var(--space-lg) var(--space-xl);border-radius:var(--cut-l) 4px;background:linear-gradient(135deg,#1d4ed8,#1e3a8a);color:#fff;text-decoration:none;overflow:hidden;box-shadow:0 18px 36px -22px rgb(30 64 175 / .6)}.ds-feature::after{content:\"\";position:absolute;inset:auto 0 0 0;height:22px;background:repeating-linear-gradient(to right,rgb(255 255 255 / .22) 0 1px,transparent 1px 12px) 0 100%/100% 8px no-repeat,repeating-linear-gradient(to right,rgb(255 255 255 / .22) 0 1px,transparent 1px 60px) 0 100%/100% 16px no-repeat}.ds-feature__title{margin:0;font:650 var(--text-section)/1.3 var(--font-display);letter-spacing:var(--tracking-display)}.ds-feature__num{font:650 var(--text-figure)/1 var(--font-display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}.ds-feature:focus-visible{outline:2px solid var(--color-focus);outline-offset:3px}"
+    },
+    {
+      "name": "ds-nav",
+      "label": "가이드 메뉴 버튼 (기본·현재·열림)",
+      "html": "<nav class=\"ds-nav\"><a class=\"ds-nav__btn\" href=\"#\">최종 워크플로우</a><a class=\"ds-nav__btn\" href=\"#\" aria-current=\"page\">프롬프트</a><button class=\"ds-nav__btn\" aria-expanded=\"true\">단계 가이드</button></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:var(--space-2xs)}.ds-nav__btn{display:inline-flex;align-items:center;height:40px;padding:0 var(--space-sm);border:0;border-radius:var(--radius-button);background:none;color:var(--color-ink-2);font:600 var(--text-sm)/1 var(--font-body);text-decoration:none;cursor:pointer;transition:background-color var(--dur-micro) var(--ease-out),color var(--dur-micro) var(--ease-out)}.ds-nav__btn:hover{background:var(--color-paper-2);color:var(--color-ink)}.ds-nav__btn[aria-current]{border-radius:var(--radius-button) var(--radius-button) 0 0;box-shadow:inset 0 -2px 0 var(--color-accent);color:var(--color-ink)}.ds-nav__btn[aria-expanded=true]{background:var(--color-accent-wash);color:var(--color-accent-deep)}.ds-nav__btn:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}"
+    },
+    {
+      "name": "ds-ruler",
+      "label": "단계 자 (시그니처)",
+      "html": "<ol class=\"ds-ruler\"><li><a href=\"#\"><span>0</span></a></li><li><a href=\"#\"><span>1</span></a></li><li><a href=\"#\"><span>2</span></a></li><li><a href=\"#\"><span>3</span></a></li><li class=\"is-key\"><a href=\"#\"><span>4</span></a></li><li class=\"is-gate\"><a href=\"#\"><span>출시</span></a></li></ol>",
+      "css": ".ds-ruler{position:relative;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));margin:0;padding:0 0 var(--space-md);list-style:none}.ds-ruler::before{content:\"\";position:absolute;left:0;right:0;top:calc(1.75rem + 6px);height:1px;background:var(--color-rule-strong)}.ds-ruler::after{content:\"\";position:absolute;left:0;right:0;top:calc(1.75rem + 7px);height:5px;background:repeating-linear-gradient(to right,var(--color-rule-2) 0 1px,transparent 1px 8px)}.ds-ruler a{position:relative;display:flex;flex-direction:column;align-items:center;padding-bottom:22px;color:var(--color-ink);text-decoration:none}.ds-ruler a::after{content:\"\";position:absolute;top:calc(1.75rem + 6px);left:calc(50% - .5px);width:1px;height:14px;background:var(--color-ink);transform-origin:top;transition:transform var(--dur-short) var(--ease-out),background-color var(--dur-micro) var(--ease-out)}.ds-ruler span{height:1.75rem;font:650 var(--text-md)/1.75rem var(--font-body);font-variant-numeric:tabular-nums;white-space:nowrap}.ds-ruler a:hover,.ds-ruler .is-key a{color:var(--color-accent)}.ds-ruler a:hover::after{transform:scaleY(1.45);background:var(--color-accent)}.ds-ruler .is-key a::after{width:2px;left:calc(50% - 1px);height:18px;background:var(--color-accent)}.ds-ruler .is-gate a::after{width:2px;left:calc(50% - 1px);height:18px}.ds-ruler .is-gate a:hover::after{background:var(--color-accent)}.ds-ruler a:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}"
+    },
+    {
+      "name": "ds-pass",
+      "label": "통과 조건 메모",
+      "html": "<div class=\"ds-pass\"><p class=\"ds-pass__title\"><strong>통과 조건</strong></p><ul><li>PRODUCT.md에 목적·대상이 적혀 있다</li><li>접근성 목표가 정해져 있다</li></ul></div>",
+      "css": ".ds-pass{position:relative;margin-top:var(--space-md);padding:var(--space-md) var(--space-lg) var(--space-lg);border:var(--rule-hair) solid var(--color-note-edge);border-radius:var(--radius-card) 0 var(--radius-card) var(--radius-card);background:var(--color-note);color:var(--color-ink);box-shadow:var(--shadow-card)}.ds-pass::before{content:\"\";position:absolute;top:-9px;left:50%;width:76px;height:18px;translate:-50% 0;rotate:-2deg;border-radius:2px;background:color-mix(in oklab,var(--color-accent-2) 50%,transparent)}.ds-pass::after{content:\"\";position:absolute;top:-1px;right:-1px;width:24px;height:24px;border-bottom-left-radius:6px;background:linear-gradient(225deg,var(--color-paper) 50%,var(--color-note-fold) 50%)}.ds-pass__title{margin:0 0 var(--space-sm);color:var(--color-note-ink);font-size:var(--text-md)}.ds-pass ul{margin:0;padding-left:1.2em}"
+    },
+    {
+      "name": "ds-stage",
+      "label": "메가메뉴 단계 타일",
+      "html": "<div class=\"ds-stages\"><a class=\"ds-stage\" href=\"#\">0. 준비</a><a class=\"ds-stage\" href=\"#\">1. 기획</a><a class=\"ds-stage\" href=\"#\">2. 구조</a></div>",
+      "css": ".ds-stages{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--space-xs)}.ds-stage{display:flex;padding:var(--space-sm) var(--space-md);border:var(--rule-hair) solid var(--color-rule-2);border-radius:var(--cut-l) 4px;background:var(--color-paper);color:var(--color-ink);font-size:var(--text-sm);line-height:1.4;text-decoration:none;transition:border-color var(--dur-micro) var(--ease-out),background-color var(--dur-micro) var(--ease-out)}.ds-stage:hover{border-color:var(--color-accent);background:var(--color-accent-wash)}.ds-stage:focus-visible{outline:2px solid var(--color-focus);outline-offset:2px}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Stage Ruler (단계 자)",
+    "summary": "제작 과정을 한 축의 자로 잰다. 차가운 슬레이트 종이 위에 1px 선과 같은 폭 숫자를 쓰고, 코발트 하나는 중요한 눈금에만 쓴다.",
+    "rules": ["The One Signal Rule", "The Same Hue, Flipped Light Rule", "The Meaningful Border Rule", "The One Weight Rule", "The Tabular Count Rule", "The No-Tracked-Caps Rule", "The Flat-At-Rest Rule"],
+    "mode": "Read"
+  }
+}

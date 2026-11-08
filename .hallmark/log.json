@@ -1,0 +1,28 @@
+[
+ {
+  "shape": "app screen: doc reader (index + reading view)",
+  "theme": "cobalt",
+  "axes": "light/grotesk-sans/cool",
+  "hero": "split: title left, lead right, stage ruler full width below",
+  "nav": "sticky bar, wordmark + 3 guide disclosures with mega panels + mode key; sheet with accordions under 48rem",
+  "footer": "none (app screen)",
+  "imagery": "none: type, ruler, code panels",
+  "photos": [],
+  "entry": "featured card full width over two secondary cards",
+  "fingerprint": "inter-pretendard-700f·c5af7ccc·2026-11-08·r0",
+  "sections": [
+   "hero",
+   "stage ruler",
+   "featured guide",
+   "two guides"
+  ],
+  "signature": "stage ruler: 0-10 + release gate as linked ticks with milestone-loop bracket",
+  "waived": [
+   "1",
+   "39b"
+  ],
+  "prompt": "대표페이지 가이드 최종 출시 수준으로",
+  "date": "2026-11-08",
+  "mode": "build"
+ }
+]

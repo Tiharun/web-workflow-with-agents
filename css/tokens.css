@@ -1,0 +1,74 @@
+/* 토큰: Hallmark Cobalt 스캐폴드 + 플레이그라운드에서 고른 값(design-system/web-workflow-guide/MASTER.md). 색·글꼴은 여기서만 정한다. */
+:root {
+  color-scheme: light dark;
+  --space-3xs: 2px; --space-2xs: 4px; --space-xs: 8px; --space-sm: 12px; --space-md: 16px; --space-lg: 24px; --space-xl: 40px; --space-2xl: 64px; --space-3xl: 96px; --space-4xl: 144px;
+  --text-xs: 0.8125rem; --text-sm: 0.9375rem; --text-md: 1.0625rem; --text-lg: 1.1875rem; --text-xl: 1.3125rem; --text-2xl: 1.6875rem; --text-3xl: 2.4375rem;
+  /* 플레이그라운드: h1 39 · h2 27 · h3 21 · 본문 17 (px) */
+  --text-display: clamp(1.9375rem, 1.45rem + 2.1vw, 2.4375rem); --text-section: clamp(1.4375rem, 1.2rem + 1vw, 1.6875rem); --text-title: clamp(1.1875rem, 1.1rem + 0.4vw, 1.3125rem); --text-lead: 1.1875rem;
+  --text-figure: clamp(2rem, 1.4rem + 2.4vw, 3rem);
+  --leading-body: 1.55; --leading-head: 1.3;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); --ease-in: cubic-bezier(0.7, 0, 0.84, 0); --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms; --dur-short: 220ms; --dur-long: 420ms;
+  --container: 1440px; --gutter: 64px; --gap-columns: 32px; --section-gap-s: 120px; --section-gap: 144px; --section-gap-l: 176px;
+  --measure: 46rem; --header-h: 64px;
+  --z-base: 1; --z-raised: 10; --z-dropdown: 100; --z-sticky: 200; --z-sticky-nav: 300; --z-modal: 400; --z-toast: 500; --z-tooltip: 600;
+
+  /* 팔레트 ①: 배경 #F8FAFC · 글자 #1E293B · 포인트 #2563EB · 버튼 글자 #FFFFFF */
+  --color-paper: #f8fafc; --color-paper-2: #f1f5f9; --color-paper-3: #e2e8f0; --color-surface: #ffffff;
+  --color-ink: #1e293b; --color-ink-2: #334155; --color-muted: #475569;
+  --color-rule: #e2e8f0; --color-rule-2: #cbd5e1; --color-rule-strong: #64748b;
+  --color-graphite: #0f172a; --color-graphite-2: #1e293b; --color-graphite-ink: #e2e8f0; --color-graphite-muted: #94a3b8; --color-graphite-rule: #334155;
+  --color-accent: #2563eb; --color-accent-2: #93c5fd; --color-accent-wash: #eff6ff; --color-accent-ink: #ffffff; --color-focus: #2563eb;
+  --color-accent-deep: #1d4ed8; --color-accent-edge: #1e40af;
+  --color-warn: #b45309; --color-warn-wash: #fffbeb; --color-warn-rule: #fcd34d;
+  /* 통과 조건 메모: 코발트·경고(호박색)와 겹치지 않는 초록(성공) 계열 */
+  --color-note: oklch(0.95 0.075 158); --color-note-edge: oklch(0.80 0.12 158); --color-note-fold: oklch(0.87 0.11 158); --color-note-ink: oklch(0.40 0.10 158);
+  --color-scrim: rgb(15 23 42 / 0.45);
+  --color-key-face: #ffffff; --color-key-edge: #cbd5e1;
+
+  --font-display: "Inter Variable", "Pretendard Variable", system-ui, sans-serif;
+  --font-body: "Inter Variable", "Pretendard Variable", system-ui, sans-serif;
+  --font-outlier: ui-monospace, "SF Mono", Consolas, "Pretendard Variable", monospace;
+
+  --radius-card: 8px; --radius-input: 6px; --radius-pill: 999px; --radius-button: 24px;
+  --cut: 8px; --cut-l: 16px;
+  --rule-hair: 1px; --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-key: 0 2px 0 0 var(--color-key-edge), 0 4px 8px -4px rgb(15 23 42 / 0.22);
+  --shadow-key-accent: 0 2px 0 0 var(--color-accent-edge), 0 6px 10px -6px rgb(30 64 175 / 0.5);
+  --shadow-key-press: inset 0 1px 2px rgb(15 23 42 / 0.14);
+  --shadow-panel: 0 18px 40px -18px rgb(15 23 42 / 0.28);
+  --tracking-display: -0.02em; --display-weight: 650;
+}
+
+/* 다크 모드: 같은 색상(hue), 밝기만 뒤집고 그림자는 끈다 */
+:root[data-mode="dark"] {
+  color-scheme: dark;
+  --color-paper: #0b1220; --color-paper-2: #111a2e; --color-paper-3: #1a2540; --color-surface: #111a2e;
+  --color-ink: #e2e8f0; --color-ink-2: #cbd5e1; --color-muted: #9aa8bd;
+  --color-rule: #1e2a44; --color-rule-2: #2c3a58; --color-rule-strong: #7c8aa3;
+  --color-graphite: #060b16; --color-graphite-2: #0f172a; --color-graphite-ink: #e2e8f0; --color-graphite-muted: #94a3b8; --color-graphite-rule: #24314d;
+  --color-accent: #6ea8fe; --color-accent-2: #93c5fd; --color-accent-wash: #13234a; --color-accent-ink: #0b1220; --color-focus: #6ea8fe;
+  --color-accent-deep: #a8c8ff; --color-accent-edge: #3b6fd1;
+  --color-warn: #fbbf24; --color-warn-wash: #241a07; --color-warn-rule: #6b4e12;
+  --color-note: oklch(0.29 0.055 160); --color-note-edge: oklch(0.46 0.09 160); --color-note-fold: oklch(0.38 0.075 160); --color-note-ink: oklch(0.86 0.13 158);
+  --color-scrim: rgb(2 6 16 / 0.62);
+  --color-key-face: #16213a; --color-key-edge: #334155;
+  --shadow-card: none; --shadow-key: 0 2px 0 0 var(--color-key-edge); --shadow-key-accent: none; --shadow-key-press: none; --shadow-panel: 0 0 0 1px var(--color-rule-2);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-mode]) {
+    color-scheme: dark;
+    --color-paper: #0b1220; --color-paper-2: #111a2e; --color-paper-3: #1a2540; --color-surface: #111a2e;
+    --color-ink: #e2e8f0; --color-ink-2: #cbd5e1; --color-muted: #9aa8bd;
+    --color-rule: #1e2a44; --color-rule-2: #2c3a58; --color-rule-strong: #7c8aa3;
+    --color-graphite: #060b16; --color-graphite-2: #0f172a; --color-graphite-ink: #e2e8f0; --color-graphite-muted: #94a3b8; --color-graphite-rule: #24314d;
+    --color-accent: #6ea8fe; --color-accent-2: #93c5fd; --color-accent-wash: #13234a; --color-accent-ink: #0b1220; --color-focus: #6ea8fe;
+    --color-accent-deep: #a8c8ff; --color-accent-edge: #3b6fd1;
+    --color-warn: #fbbf24; --color-warn-wash: #241a07; --color-warn-rule: #6b4e12;
+  --color-note: oklch(0.29 0.055 160); --color-note-edge: oklch(0.46 0.09 160); --color-note-fold: oklch(0.38 0.075 160); --color-note-ink: oklch(0.86 0.13 158);
+    --color-scrim: rgb(2 6 16 / 0.62);
+    --color-key-face: #16213a; --color-key-edge: #334155;
+    --shadow-card: none; --shadow-key: 0 2px 0 0 var(--color-key-edge); --shadow-key-accent: none; --shadow-key-press: none; --shadow-panel: 0 0 0 1px var(--color-rule-2);
+  }
+}
+:root[data-mode="light"] { color-scheme: light; }

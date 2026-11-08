@@ -21,3 +21,10 @@ auth.json
 browser-profile/
 # 그림 제작 규칙 (로컬 전용, 배포 안 함)
 docs/웹 비주얼 디자인 v3 작업 규칙.md
+
+# 테스트 산출물
+test-results/
+playwright-report/
+# 디자인 도구 캐시·스크린샷(다시 만들 수 있음)
+.hallmark/shots/
+.impeccable/hook.cache.json
