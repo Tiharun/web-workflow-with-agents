@@ -19,7 +19,7 @@
 /* ---------- base adjustments ---------- */
 :root { --anchor-offset: calc(var(--header-h) + 20px); }
 html { scroll-padding-top: var(--anchor-offset); }
-body { font-size: var(--text-md); line-height: var(--leading-body); word-break: keep-all; overflow-wrap: break-word; min-height: 100dvh; }
+body { font-size: var(--text-md); line-height: var(--leading-body); word-break: keep-all; overflow-wrap: break-word; min-height: 100dvh; display: flex; flex-direction: column; }
 h1, h2, h3, h4 { line-height: var(--leading-head); }
 h1 { max-width: 18em; } h2 { max-width: 26em; } h3 { max-width: 34em; }
 strong { font-weight: 650; }
@@ -27,7 +27,7 @@ a { color: var(--color-accent); text-decoration-color: color-mix(in oklab, var(-
 a:hover { color: var(--color-accent-deep); text-decoration-color: currentColor; }
 button { cursor: pointer; color: inherit; }
 .icon { width: 1.25rem; height: 1.25rem; flex: none; }
-.site-main { padding-bottom: var(--space-3xl); }
+.site-main { flex: 1 0 auto; padding-bottom: var(--space-3xl); } /* 짧은 화면에서도 푸터가 바닥에 붙는다 */
 
 .skip-link { position: fixed; top: var(--space-xs); left: var(--space-xs); z-index: var(--z-toast); padding: var(--space-xs) var(--space-md); border-radius: var(--radius-button); background: var(--color-accent); color: var(--color-accent-ink); font-weight: 600; text-decoration: none; transform: translateY(-160%); }
 .skip-link:focus-visible { transform: none; color: var(--color-accent-ink); }
