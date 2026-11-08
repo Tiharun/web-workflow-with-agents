@@ -80,6 +80,7 @@ export const siteConfig = {
     darkMode: '다크 모드',
     warning: '경고',
     newTab: '(새 탭)',
+    repo: 'GitHub 저장소',
     loading: '문서를 불러오는 중',
     loadError: '문서를 불러오지 못했습니다.',
     loadErrorHint: '네트워크를 확인한 뒤 다시 시도하거나 GitHub에서 원본을 여세요.',

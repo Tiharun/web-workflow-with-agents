@@ -30,6 +30,7 @@
 | `js/guide.js` | 가이드 화면: 본문, 좌측 상단 도구, 목차 드로어, 진행 막대, 현재 위치 | `placeVisuals`를 `visuals.js`로 옮긴다(M5) |
 | `js/visuals.js` (새 파일) | `type → (doc, guide) => HTMLElement \| null` 대응표. 짝 제목이 없거나 `null`이면 그 비주얼만 건너뛴다 | M5 |
 | `js/header.js` | 헤더, 메가메뉴, 모바일 아코디언, 다크 모드 토글 | 단계 0개 처리(M3) |
+| `js/footer.js` (새 파일) | 공통 푸터: 사이트 이름, 가이드 링크, 저장소 링크(`footerHtml` 순수 함수 + `initFooter`) | M0 |
 | `js/home.js` | 홈: 히어로, 단계 자, 입구 카드 3개 | 그대로 |
 | `js/ruler.js` | 단계 자(`stagesFromDoc`, `buildRuler`) | `visuals.js`의 `stage-ruler` 항목으로 등록 |
 | `js/motion.js`·`scroll.js`·`tooltip.js`·`icons.js` | 등장 모션, 스크롤 이동, 툴팁, 아이콘 | 그대로 |
@@ -98,7 +99,7 @@ location.hash ─ router.parse ─ { home | guide+stageId | notfound } ─ main.
 각 마일스톤은 한 세션 크기다. 완료 기준은 모두 눈으로 확인할 수 있다.
 
 ### M0 골격 + 배포
-- 시제품을 커밋한다. `package.json`(devDependencies: `@playwright/test`), `playwright.config`, `.gitignore`(`node_modules/`, `test-results/`, `playwright-report/`), 테스트 폴더, 기준 이미지 첫 생성. 현재 브랜치를 `main`에 합친다. 사용자가 Pages를 켜고(Settings → Pages → Deploy from a branch → `main` / root), `site.url`을 채운다. CLAUDE.md '명령'의 테스트 줄을 고친다.
+- 시제품을 커밋한다. `package.json`(devDependencies: `@playwright/test`), `playwright.config`, `.gitignore`(`node_modules/`, `test-results/`, `playwright-report/`), 테스트 폴더, 기준 이미지 첫 생성. 현재 브랜치를 `main`에 합친다. 사용자가 Pages를 켜고(Settings → Pages → Deploy from a branch → `main` / root), `site.url`을 채운다. 공통 푸터를 더한다(2026-11-08 사용자 결정). CLAUDE.md '명령'의 테스트 줄을 고친다.
 - 완료 기준
   1. 휴대폰과 PC에서 Pages 주소로 홈이 열린다.
   2. 배포본에서 가이드 하나를 열면 md 본문이 보인다.

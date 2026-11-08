@@ -1,6 +1,7 @@
 // 앱 시작: 헤더, 해시 라우터(#/, #/<가이드>, #/<가이드>/<제목 id>, 그 밖은 찾을 수 없음), 복사 버튼.
 import { siteConfig, guideById } from './site-config.js';
 import { initHeader, setCurrentGuide, closeMenus } from './header.js';
+import { initFooter } from './footer.js';
 import { initTooltips } from './tooltip.js';
 import { renderHome } from './home.js';
 import { renderGuide, scrollToStage } from './guide.js';
@@ -15,6 +16,7 @@ let smoothNext = false;
 
 document.title = site.name;
 initHeader(document.getElementById('site-header'));
+initFooter(document.getElementById('site-footer'));
 initTooltips();
 
 /** '#/final/0단계-준비' → { name: 'guide', guide, stageId } */
@@ -70,12 +72,12 @@ function renderNotFound() {
     </div>`;
 }
 
-// 메가메뉴·목차·단계 자에서 누른 이동만 부드럽게 스크롤한다.
+// 메가메뉴·목차·단계 자(data-smooth)에서 누른 이동만 부드럽게 스크롤한다.
 document.addEventListener('click', (e) => {
-  const a = e.target.closest('a[data-smooth]');
+  const a = e.target.closest('a[href^="#/"]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-  smoothNext = true;
-  // 같은 주소를 다시 누르면 hashchange가 없으므로 직접 이동한다.
+  if (a.hasAttribute('data-smooth')) smoothNext = true;
+  // 같은 주소를 다시 누르면(예: 푸터의 현재 가이드 링크) hashchange가 없으므로 직접 이동한다.
   if (a.getAttribute('href') === location.hash) { e.preventDefault(); route(); }
 });
 
