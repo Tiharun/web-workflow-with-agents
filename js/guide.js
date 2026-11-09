@@ -9,8 +9,11 @@ import { reveal } from './motion.js';
 
 const { ui, site } = siteConfig;
 
-/** @returns {Promise<() => void>} 화면을 떠날 때 부르는 정리 함수 */
-export async function renderGuide(main, guide, stageId, { smooth = false } = {}) {
+/**
+ * @param {{ smooth?: boolean, onRetry: () => void }} options onRetry: [다시 시도] — 라우터가 지금 주소로 다시 그리고 정리 함수도 받는다.
+ * @returns {Promise<() => void>} 화면을 떠날 때 부르는 정리 함수
+ */
+export async function renderGuide(main, guide, stageId, { smooth = false, onRetry } = {}) {
   main.innerHTML = `
     <div class="guide" data-guide="${guide.id}">
       <div class="container guide__layout">
@@ -35,13 +38,14 @@ export async function renderGuide(main, guide, stageId, { smooth = false } = {})
   } catch {
     article.removeAttribute('aria-busy');
     article.innerHTML = errorHtml(guide);
-    article.querySelector('[data-retry]').addEventListener('click', () => renderGuide(main, guide, stageId));
+    article.querySelector('[data-retry]').addEventListener('click', () => onRetry());
     return () => {};
   }
   if (!main.contains(article)) return () => {};
 
   article.replaceChildren(doc.template.content.cloneNode(true));
   article.removeAttribute('aria-busy');
+  article.dataset.loaded = ''; // 본문을 다 그렸다는 표시. 오류 상태에는 붙이지 않는다(라우터가 같은 가이드인지 볼 때 쓴다).
   document.title = `${doc.title} | ${site.name}`;
   placeVisuals(article, guide, doc);
   buildToc(main, guide, doc);

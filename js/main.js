@@ -27,7 +27,7 @@ async function route() {
   closeMenus();
   setCurrentGuide(next.guide?.id ?? null);
 
-  if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('.doc:not([aria-busy])')) {
+  if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('#doc[data-loaded]')) {
     scrollToStage(main, next.stageId, smooth);
     return;
   }
@@ -41,7 +41,7 @@ async function route() {
     cleanup = renderHome(main);
     scrollTo({ top: 0, behavior: 'instant' });
   } else if (next.name === 'guide') {
-    const done = await renderGuide(main, next.guide, next.stageId, { smooth });
+    const done = await renderGuide(main, next.guide, next.stageId, { smooth, onRetry: route });
     if (view.guideId === next.guide.id) cleanup = done;
     else done();
   } else {

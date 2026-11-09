@@ -59,3 +59,51 @@ test('repeated missing stages keep one notice; guide root clears it', async ({ p
   await page.evaluate(() => { location.hash = '#/final'; });
   await expect(page.locator('.notice')).toHaveCount(0);
 });
+
+const finalFile = guides.find((g) => g.id === 'final').file;
+async function blockFinal(page) {
+  const ctl = { blocked: true, requests: 0 };
+  await page.route(`**/${finalFile}`, (r) => { ctl.requests++; return ctl.blocked ? r.abort() : r.continue(); });
+  return ctl;
+}
+
+test('blocked md shows the error; retry renders the body with a new request', async ({ page }) => {
+  const ctl = await blockFinal(page);
+  await page.goto('/#/final');
+  const alert = page.getByRole('alert');
+  await expect(alert.locator('h1')).toHaveText(ui.loadError);
+  const src = alert.getByRole('link');
+  await expect(src).toHaveAttribute('href', `${site.repoUrl}/blob/${site.branch}/${finalFile}`);
+  await expect(src).toHaveAttribute('target', '_blank');
+  ctl.blocked = false;
+  await alert.getByRole('button', { name: ui.retry }).click();
+  await expect(page.locator('#doc h1')).toHaveText(finalH1);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(ctl.requests).toBeGreaterThanOrEqual(2);
+});
+
+test('changing stage while the error is shown retries instead of a notice', async ({ page }) => {
+  const ctl = await blockFinal(page);
+  await page.goto('/#/final');
+  await expect(page.getByRole('alert')).toBeVisible();
+  ctl.blocked = false;
+  await page.evaluate(() => { location.hash = '#/final/0단계-준비'; });
+  await expect(page.locator('[id="0단계-준비"]')).toBeInViewport();
+  await expect(page.locator('.notice')).toHaveCount(0);
+  await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
+test('leaving a retried guide stops progress tracking', async ({ page }) => {
+  const ctl = await blockFinal(page);
+  await page.goto('/#/final');
+  await expect(page.getByRole('alert')).toBeVisible();
+  ctl.blocked = false;
+  await page.getByRole('button', { name: ui.retry }).click();
+  await expect(page.locator('#doc h1')).toHaveText(finalH1);
+  await page.evaluate(() => { location.hash = '#/'; });
+  await expect(page.locator('html')).toHaveAttribute('data-view', 'home');
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  // 스크롤 처리기는 다음 프레임에 막대를 고친다. 두 프레임을 기다린 뒤 본다(바로 보면 늘 통과한다).
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  await expect(page.locator('.progress__bar')).toHaveAttribute('style', /scaleX\(0\)/);
+});
