@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 단계 자 눈금 3개(가운데가 주요 단계). 색은 css/tokens.css의 accent·accent-ink(라이트/다크) 값이다(tests/unit/meta-assets.test.mjs). -->
+  <style>
+    .bg { fill: #2563eb; }
+    .fg { fill: #ffffff; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #6ea8fe; }
+      .fg { fill: #0b1220; }
+    }
+  </style>
+  <rect class="bg" width="32" height="32" rx="7"/>
+  <rect class="fg" x="7" y="15" width="4" height="9" rx="1"/>
+  <rect class="fg" x="14" y="8" width="4" height="16" rx="1"/>
+  <rect class="fg" x="21" y="15" width="4" height="9" rx="1"/>
+</svg>

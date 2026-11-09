@@ -23,7 +23,7 @@ export async function openPage(page, path) {
 }
 
 // 배포 주소(하위 경로 /<저장소>/)를 흉내 낸다: 그 주소의 요청을 이 저장소 파일로 답하고, 없으면 GitHub Pages처럼 404.html을 404로 준다.
-const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.md': 'text/markdown; charset=utf-8', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.json': 'application/json' };
+const types = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.md': 'text/markdown; charset=utf-8', '.woff2': 'font/woff2', '.svg': 'image/svg+xml', '.png': 'image/png', '.json': 'application/json' };
 export async function serveAsPages(page) {
   const site = new URL(siteConfig.site.url);
   await page.route(`${site.origin}/**`, async (route) => {

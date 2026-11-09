@@ -8,6 +8,9 @@ export const siteConfig = {
     branch: 'main',
     // index.html <meta name="description">와 같아야 함(tests/e2e/static-copy.spec.mjs)
     description: '웹사이트를 Claude와 함께 만드는 순서·스킬·프롬프트를 정리한 가이드 3개.',
+    // 아이콘·OG 그림(npm run images가 만든다). index.html·404.html head와 같아야 함(tests/unit/html-head.test.mjs)
+    ogImage: 'assets/og.png', // og:image = new URL(ogImage, url)
+    icons: { svg: 'assets/favicon.svg', png: 'assets/favicon-32.png', apple: 'assets/apple-touch-icon.png' },
   },
 
   guides: [

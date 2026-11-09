@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="ko" data-mode="light">
+<head>
+  <meta charset="utf-8">
+  <title>OG 그림 원본</title>
+  <!-- npm run images(tools/make-images.mjs)가 1200×630으로 찍어 assets/og.png를 만든다. 글자는 siteConfig, 색·글꼴은 토큰. -->
+  <link rel="stylesheet" href="../vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="../css/site.css">
+  <style>
+    html, body { width: 1200px; height: 630px; min-height: 0; margin: 0; overflow: hidden; background: var(--color-paper); }
+    /* 메신저가 가장자리를 자르므로 핵심 글자는 60px보다 안쪽(여기서는 80px) */
+    .og { box-sizing: border-box; display: grid; grid-template-rows: auto 1fr auto; width: 1200px; height: 630px; padding: 80px 88px 72px; }
+    .og__mark { display: block; width: 64px; height: 64px; }
+    .og__text { align-self: center; display: grid; gap: 22px; }
+    .og__name { margin: 0; color: var(--color-ink); font-family: var(--font-display); font-size: 76px; font-weight: var(--display-weight); letter-spacing: var(--tracking-display); line-height: 1.12; }
+    .og__desc { margin: 0; color: var(--color-ink-2); font-size: 32px; line-height: 1.5; }
+    .og__ticks { display: flex; align-items: flex-end; gap: 0; height: 40px; border-bottom: 2px solid var(--color-rule-strong); }
+    .og__ticks span { flex: 1; display: flex; justify-content: center; align-items: flex-end; height: 100%; }
+    .og__ticks span::before { content: ""; width: 4px; height: 18px; border-radius: 2px 2px 0 0; background: var(--color-rule-strong); }
+    .og__ticks .is-loop { background: var(--color-accent-wash); }
+    .og__ticks .is-loop::before { height: 30px; background: var(--color-accent); }
+  </style>
+</head>
+<body>
+  <main class="og">
+    <img class="og__mark" src="../assets/favicon.svg" alt="">
+    <div class="og__text">
+      <h1 class="og__name" id="name"></h1>
+      <p class="og__desc" id="desc"></p>
+    </div>
+    <div class="og__ticks" id="ticks" aria-hidden="true"></div>
+  </main>
+  <script type="module">
+    import { siteConfig } from '../js/site-config.js';
+    const { site, ruler } = siteConfig;
+    document.getElementById('name').textContent = site.name;
+    document.getElementById('desc').textContent = site.description;
+    // 장식 눈금: 최종 워크플로우 0~10단계, 마일스톤 루프 구간(ruler.loop)만 강조
+    const ticks = document.getElementById('ticks');
+    for (let n = 0; n <= 10; n++) {
+      const s = document.createElement('span');
+      if (n >= Number(ruler.loop.from) && n <= Number(ruler.loop.to)) s.className = 'is-loop';
+      ticks.append(s);
+    }
+    await document.fonts.ready;
+    document.documentElement.dataset.ready = '';
+  </script>
+</body>
+</html>
