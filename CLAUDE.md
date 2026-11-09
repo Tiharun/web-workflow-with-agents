@@ -12,7 +12,7 @@
 - 실행: `python -m http.server 8000 --bind 127.0.0.1` → http://127.0.0.1:8000 (`.claude/launch.json`의 `static`)
 - 빌드: 없음(파일을 그대로 배포)
 - 테스트:
-  - `npm test` — 단위(node:test) + e2e(Playwright). 테스트 서버는 `tests/serve.py`가 8123 포트로 자동 실행
+  - `npm test` — 단위(node:test) + DOM(Playwright, `tests/dom`) + e2e(Playwright). 테스트 서버는 `tests/serve.py`가 8123 포트로 자동 실행
   - `npm run test:visual` — 시각 기준 대조(375·768·1280·1440 × 라이트·다크, Windows 기준 이미지). 갱신: `npm run test:visual -- --update-snapshots`
   - 슬롭 검사: `node ~/.claude/skills/hallmark/scripts/sloplint.mjs css/site.css index.html --genre modern-minimal --scope app`
   - 디자인 검사: `impeccable detect --json <파일>`

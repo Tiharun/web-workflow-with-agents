@@ -32,7 +32,8 @@ export function slugify(text) {
     .replace(/\s/g, '-');
 }
 
-function buildDoc(guide, text) {
+/** md 원문 → 화면용 template과 제목·단계 데이터. fetch와 분리해 고정 md 조각으로 테스트한다. */
+export function buildDoc(guide, text) {
   const tpl = document.createElement('template');
   tpl.innerHTML = marked.parse(text, { gfm: true });
   const root = tpl.content;
@@ -55,15 +56,19 @@ function buildDoc(guide, text) {
 
 function assignHeadingIds(root) {
   const seen = new Map();
+  const used = new Set();
   const list = [];
   const stack = [];
   root.querySelectorAll('h1, h2, h3, h4').forEach((el) => {
     const level = Number(el.tagName[1]);
     const title = el.textContent.trim();
     const base = slugify(title) || 'section';
-    const n = seen.get(base) ?? 0;
+    // 같은 base는 -1, -2…를 붙이고, 그 id를 이미 다른 제목이 쓰고 있으면(예: 'a-1' 제목) 다음 번호로 넘긴다.
+    let n = seen.get(base) ?? 0;
+    let id = n ? `${base}-${n}` : base;
+    while (used.has(id)) id = `${base}-${++n}`;
     seen.set(base, n + 1);
-    const id = n ? `${base}-${n}` : base;
+    used.add(id);
     el.id = id;
     while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
     const parentId = level > 1 && stack.length && stack[stack.length - 1].level > 1 ? stack[stack.length - 1].id : null;

@@ -3,8 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "npm run test:unit && npm run test:e2e",
+    "test": "npm run test:unit && npm run test:dom && npm run test:e2e",
     "test:unit": "node --test \"tests/unit/**/*.test.mjs\"",
+    "test:dom": "playwright test --project=dom",
     "test:e2e": "playwright test --project=e2e",
     "test:visual": "playwright test --project=\"visual-*\""
   },
