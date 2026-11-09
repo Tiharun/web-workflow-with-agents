@@ -57,6 +57,19 @@ test.describe('current location', () => {
       await expect(current(page)).toHaveAttribute('data-toc-id', ids.at(-1));
     });
   }
+
+  // 끝 근처라 멈춤선까지 못 오는 제목으로 이동하면 페이지 끝이어도 고른 제목을 강조한다.
+  for (const [width, height] of [[1440, 900], [768, 1024]]) {
+    test(`jumping to a heading that cannot reach the top highlights it (${width}px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height });
+      await openPage(page, '/#/design');
+      const id = (await tocIds(page)).at(-2);
+      await openPage(page, `/#/design/${encodeURIComponent(id)}`);
+      await twoFrames(page);
+      expect(await page.evaluate(() => scrollY >= document.documentElement.scrollHeight - innerHeight - 1)).toBe(true);
+      await expect(current(page)).toHaveAttribute('data-toc-id', id);
+    });
+  }
 });
 
 // 스크롤 위치를 모두 기록한다. 즉시 이동이면 중간값이 없고, 부드러운 이동이면 생긴다(pages.spec와 같은 방식).
@@ -128,6 +141,19 @@ test.describe('mega menu', () => {
       await copy.click();
       await expect(page.locator('#mega-final')).toBeHidden();
       await expect(copy).toBeFocused();
+    });
+
+    // macOS Safari·Firefox는 버튼을 눌러도 초점을 주지 않는다(합성 클릭으로 재현). 그래도 연 버튼으로 초점을 끌어오지 않는다.
+    test('outside click on a control that takes no focus leaves focus alone', async ({ page }) => {
+      await openPage(page, '/#/final');
+      const copy = page.locator('#doc .prompt button[data-copy]').first();
+      await copy.evaluate((el) => scrollBy({ top: el.getBoundingClientRect().top - 650, behavior: 'instant' }));
+      await guideBtn(page, 'final').click();
+      await page.locator('#mega-final a').first().waitFor();
+      await page.evaluate(() => document.activeElement.blur());
+      await copy.dispatchEvent('click');
+      await expect(page.locator('#mega-final')).toBeHidden();
+      expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true);
     });
   });
 
@@ -316,7 +342,7 @@ test.describe('menu body states', () => {
 // 늘 보이는 sticky 막대(헤더·가이드 도구)의 조작 요소는 초점을 받아도 페이지를 굴리지 않는다.
 // 루트 scroll-padding-top 영역 안이라 Chrome이 '가려졌다'고 보고 수백 px 굴렸다(측정 375px 490px, 1280px 460px).
 test.describe('focus on sticky bars keeps the reading position', () => {
-  const stickyControls = '.site-header__inner :is(a, button), .guide-tools :is(a, button)';
+  const stickyControls = '.site-header .brand, .guide-nav__btn, .site-header__tools :is(a, button), .guide-tools :is(a, button)';
   for (const width of [375, 768, 1280]) {
     test(`focusing each sticky control does not scroll (${width}px)`, async ({ page }) => {
       await page.setViewportSize({ width, height: 900 });
@@ -341,7 +367,49 @@ test.describe('focus on sticky bars keeps the reading position', () => {
     expect(await page.evaluate(() => scrollY)).toBe(8000);
   });
 
+  // 키가 낮은 창(확대 포함)은 메가메뉴 안에서 스크롤한다. 뒤로 탭해도 초점 항목이 보이고 페이지는 그대로다(WCAG 2.4.11).
+  test('tabbing through a short mega menu keeps each link visible and the page still', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 400 });
+    await openPage(page, '/#/final');
+    await page.evaluate(() => scrollTo({ top: 3000, behavior: 'instant' }));
+    await guideBtn(page, 'final').evaluate((b) => b.focus());
+    await page.keyboard.press('Enter');
+    await page.locator('#mega-final .mega__stage').first().waitFor();
+    const n = await page.locator('#mega-final a').count();
+    const visible = () => page.evaluate(() => {
+      const a = document.activeElement;
+      const box = a.closest('.mega__inner').getBoundingClientRect();
+      const r = a.getBoundingClientRect();
+      return Math.min(r.bottom, box.bottom, innerHeight) - Math.max(r.top, box.top, 0) > 0;
+    });
+    const hidden = [];
+    for (let i = 0; i < n; i++) { await page.keyboard.press('Tab'); if (!(await visible())) hidden.push(`tab ${i}`); }
+    for (let i = 0; i < n - 1; i++) { await page.keyboard.press('Shift+Tab'); if (!(await visible())) hidden.push(`back ${i}`); }
+    expect(hidden).toEqual([]);
+    expect(await page.evaluate(() => scrollY)).toBe(3000);
+  });
+
   test.describe('375px', () => {
+    test.use({ viewport: { width: 375, height: 812 } });
+    test('tabbing into the mobile menu does not scroll the page', async ({ page }) => {
+      await openPage(page, '/#/final');
+      await page.locator('.nav-toggle').evaluate((b) => b.focus());
+      await page.evaluate(() => scrollTo({ top: 3000, behavior: 'instant' }));
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#mobile-nav')).toBeVisible();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Tab');
+      await twoFrames(page);
+      expect(await page.evaluate(() => scrollY)).toBe(3000);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('.nav-toggle')).toBeFocused();
+      await twoFrames(page);
+      expect(await page.evaluate(() => scrollY)).toBe(3000);
+    });
+  });
+
+  test.describe('375px', () => {
+
     test.use({ viewport: { width: 375, height: 812 } });
     test('closing the toc returns focus to its button without scrolling', async ({ page }) => {
       await openPage(page, '/#/final');

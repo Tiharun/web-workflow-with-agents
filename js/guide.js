@@ -209,7 +209,8 @@ function trackScroll(main, article, doc) {
   const measure = () => {
     const y = scrollY;
     offsets = heads.map((el) => el.getBoundingClientRect().top + y);
-    anchor = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
+    // 메뉴가 열린 동안은 루트 scroll-padding이 0이다(site.css). 그때 잰 값은 쓰지 않는다.
+    if (!document.documentElement.classList.contains('is-nav-open')) anchor = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
   };
   const update = () => {
     frame = 0;
@@ -219,7 +220,12 @@ function trackScroll(main, article, doc) {
     let idx = -1;
     for (let i = 0; i < offsets.length && offsets[i] <= line; i++) idx = i;
     // 페이지 끝이면 마지막 제목: 끝의 짧은 절은 멈춤선까지 올라오지 못한다.
-    if (max > 0 && scrollY >= max - 1) idx = heads.length - 1;
+    // 단, 이동해 초점을 받은 제목이 화면 안에 있으면 그 제목이다(고른 곳이 먼저).
+    if (max > 0 && scrollY >= max - 1) {
+      const chosen = heads.indexOf(document.activeElement);
+      const top = chosen > idx ? heads[chosen].getBoundingClientRect().top : -1;
+      idx = top >= 0 && top < innerHeight ? chosen : heads.length - 1;
+    }
     const id = idx >= 0 ? heads[idx].id : null;
     if (id !== current) {
       links.get(current)?.removeAttribute('aria-current');
@@ -231,10 +237,12 @@ function trackScroll(main, article, doc) {
   const ro = new ResizeObserver(() => { measure(); onScroll(); });
   ro.observe(article);
   addEventListener('scroll', onScroll, { passive: true });
+  article.addEventListener('focusin', onScroll); // 굴림 없이 제목에 초점만 옮겨도(이미 끝에 있을 때) 다시 계산
   measure();
   update();
   return () => {
     removeEventListener('scroll', onScroll);
+    article.removeEventListener('focusin', onScroll);
     ro.disconnect();
     cancelAnimationFrame(frame);
     if (bar) bar.style.transform = 'scaleX(0)';

@@ -61,12 +61,13 @@ export function initHeader(mount) {
     if (opener) { closeMenus(); opener.focus(); }
   });
   // 바깥 클릭: 닫는다. 빈 곳을 눌러 초점이 사라졌으면(또는 닫힌 메뉴 안에 남았으면) 연 버튼으로 돌려준다.
-  // 다른 조작 요소를 눌렀으면 그 요소의 초점을 뺏지 않는다.
+  // 다른 조작 요소를 눌렀으면 초점을 건드리지 않는다(macOS Safari·Firefox는 눌러도 초점을 주지 않는다).
   document.addEventListener('click', (e) => {
     const opener = openMenuButton();
     if (!opener || header.contains(e.target)) return;
     const scope = menuScope(opener);
     closeMenus();
+    if (e.target.closest('a[href], button, input, select, textarea, summary, [tabindex]')) return;
     const active = document.activeElement;
     if (!active || active === document.body || scope.some((el) => el.contains(active))) opener.focus();
   });
@@ -119,6 +120,7 @@ function toggleMega(btn) {
   if (open) return;
   btn.setAttribute('aria-expanded', 'true');
   document.getElementById(btn.getAttribute('aria-controls')).hidden = false;
+  document.documentElement.classList.add('is-nav-open');
   fillMenu(btn.dataset.guide, header.querySelector(`[data-mega-body="${btn.dataset.guide}"]`), 'mega');
 }
 
