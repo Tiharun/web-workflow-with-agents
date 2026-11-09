@@ -60,6 +60,17 @@ test('badges for measure, search and guess', async ({ page }) => {
   await expect(page.locator('#doc p')).toContainText('(참고)');
 });
 
+test('badges wrap inline code inside the parentheses', async ({ page }) => {
+  await render(page, '실행됩니다(`a: true`, 측정). 끝(`x`) 그리고(`y`, 참고)\n');
+  const badge = page.locator('#doc .badge');
+  await expect(badge).toHaveCount(1);
+  await expect(badge).toHaveAttribute('data-kind', 'measure');
+  await expect(badge).toHaveText('a: true, 측정');
+  await expect(badge.locator('code')).toHaveText('a: true');
+  await expect(badge.locator('svg.badge__icon')).toHaveCount(1);
+  await expect(page.locator('#doc p')).toHaveText('실행됩니다 a: true, 측정. 끝(x) 그리고(y, 참고)');
+});
+
 test('code blocks keep text exact', async ({ page }) => {
   await render(page, fence('bash', 'echo "⚠️ (측정)"'));
   await expect(page.locator('#doc .prompt .prompt__lang')).toHaveText('bash');

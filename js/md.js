@@ -298,18 +298,47 @@ function shapeBadges(root) {
     const frag = document.createDocumentFragment();
     let last = 0;
     for (const m of value.matchAll(BADGE)) {
-      const before = value.slice(last, m.index);
-      frag.append(before && !/\s$/.test(before) ? `${before} ` : before);
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      badge.dataset.kind = KIND[m[2]];
-      if (KIND[m[2]] === 'measure') badge.innerHTML = icon('check', 'icon badge__icon');
-      badge.append(`${m[1]}${m[2]}${m[3]}`);
-      frag.append(badge);
+      frag.append(spaced(value.slice(last, m.index)));
+      frag.append(makeBadge(m[2], `${m[1]}${m[2]}${m[3]}`));
       last = m.index + m[0].length;
     }
     frag.append(value.slice(last));
     node.replaceWith(frag);
+  });
+  shapeSplitBadges(root);
+}
+
+const spaced = (before) => (before && !/\s$/.test(before) ? `${before} ` : before);
+
+function makeBadge(word, ...content) {
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.dataset.kind = KIND[word];
+  if (KIND[word] === 'measure') badge.innerHTML = icon('check', 'icon badge__icon');
+  badge.append(...content);
+  return badge;
+}
+
+// 괄호 안에 인라인 코드 등이 끼어 글자 조각이 나뉜 경우: "실행됩니다(`a`, 측정)" → 앞 조각의 '('부터 뒤 조각의 ')'까지 배지로 묶는다.
+const SPLIT_END = /^[^()]{0,80}?(측정|검색 확인|추측)[^()]{0,80}?\)/;
+
+function shapeSplitBadges(root) {
+  textNodes(root, (n) => SPLIT_END.test(n.nodeValue)).forEach((end) => {
+    const mids = [];
+    let start = end.previousSibling;
+    while (start?.nodeType === Node.ELEMENT_NODE && start.matches('code, strong, em, a')) {
+      mids.unshift(start);
+      start = start.previousSibling;
+    }
+    if (!mids.length || start?.nodeType !== Node.TEXT_NODE) return;
+    const open = start.nodeValue.lastIndexOf('(');
+    if (open < 0 || start.nodeValue.includes(')', open)) return;
+    const close = end.nodeValue.indexOf(')');
+    const word = end.nodeValue.match(SPLIT_END)[1];
+    const badge = makeBadge(word, start.nodeValue.slice(open + 1), ...mids, end.nodeValue.slice(0, close));
+    start.nodeValue = spaced(start.nodeValue.slice(0, open));
+    end.nodeValue = end.nodeValue.slice(close + 1);
+    start.after(badge);
   });
 }
 
