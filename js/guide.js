@@ -1,6 +1,6 @@
 // 가이드 화면: md 본문, 좌측 상단 도구([→ 목차] [⬇ md]), 목차 드로어, 진행 막대, 현재 위치, 등장 모션.
 import { siteConfig, guideById } from './site-config.js';
-import { loadGuide } from './md.js';
+import { loadGuide, readyDoc } from './md.js';
 import { buildRuler } from './ruler.js';
 import { icon } from './icons.js';
 import { escapeHtml } from './header.js';
@@ -16,6 +16,8 @@ const { ui, site } = siteConfig;
  * @returns {Promise<() => void>} 화면을 떠날 때 부르는 정리 함수
  */
 export async function renderGuide(main, guide, stageId, { smooth = false, focusTop = false, onRetry } = {}) {
+  // 이미 받은 문서면 스켈레톤 없이 바로 그린다(스펙 §5: 불러오는 동안만).
+  const cached = readyDoc(guide);
   main.innerHTML = `
     <div class="guide" data-guide="${guide.id}">
       <div class="container guide__layout">
@@ -23,7 +25,7 @@ export async function renderGuide(main, guide, stageId, { smooth = false, focusT
           <button type="button" class="tool-btn" data-toc-open aria-haspopup="dialog" aria-controls="toc" aria-expanded="false">${icon('right')}<span>${ui.toc}</span></button>
           <a class="tool-btn" href="${guide.file}" download="${escapeHtml(guide.downloadName)}" aria-label="${ui.downloadLabel}" data-tip="${ui.downloadLabel}">${icon('download')}<span aria-hidden="true">${ui.download}</span></a>
         </div>
-        <article class="doc" id="doc" aria-busy="true">${skeleton()}</article>
+        ${cached ? '<article class="doc" id="doc"></article>' : `<article class="doc" id="doc" aria-busy="true">${skeleton()}</article>`}
       </div>
       <dialog class="toc" id="toc" aria-label="${ui.toc}">
         <div class="toc__bar">
@@ -34,18 +36,20 @@ export async function renderGuide(main, guide, stageId, { smooth = false, focusT
     </div>`;
 
   const article = main.querySelector('#doc');
-  let doc;
-  try {
-    doc = await loadGuide(guide);
-  } catch {
-    article.removeAttribute('aria-busy');
-    article.innerHTML = errorHtml(guide);
-    article.querySelector('[data-retry]').addEventListener('click', () => onRetry());
-    // 다시 시도 버튼이 다시 그려지며 사라져도 초점이 body로 떨어지지 않게 한다.
-    if (focusTop) focusEl(article.querySelector('h1'));
-    return () => {};
+  let doc = cached;
+  if (!doc) {
+    try {
+      doc = await loadGuide(guide);
+    } catch {
+      article.removeAttribute('aria-busy');
+      article.innerHTML = errorHtml(guide);
+      article.querySelector('[data-retry]').addEventListener('click', () => onRetry());
+      // 다시 시도 버튼이 다시 그려지며 사라져도 초점이 body로 떨어지지 않게 한다.
+      if (focusTop) focusEl(article.querySelector('h1'));
+      return () => {};
+    }
+    if (!main.contains(article)) return () => {};
   }
-  if (!main.contains(article)) return () => {};
 
   article.replaceChildren(doc.template.content.cloneNode(true));
   article.removeAttribute('aria-busy');

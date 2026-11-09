@@ -1,6 +1,6 @@
 // 공통 헤더: 사이트 이름, 가이드 버튼 3개 + 메가메뉴, 다크 모드, 768px 미만 햄버거 아코디언.
 import { siteConfig } from './site-config.js';
-import { loadGuide } from './md.js';
+import { loadGuide, readyDoc } from './md.js';
 import { icon } from './icons.js';
 
 const { ui, guides, site } = siteConfig;
@@ -145,15 +145,19 @@ function toggleAccordion(btn) {
 
 const prefetch = (id) => loadGuide(guides.find((g) => g.id === id)).catch(() => {});
 
-/** 메뉴 본문: md 제목에서 만든 단계 버튼. 불러오는 동안만 뼈대를 보인다. */
+/** 메뉴 본문: md 제목에서 만든 단계 버튼. 불러오는 동안만 뼈대를 보인다(이미 받았으면 바로 채운다). */
 async function fillMenu(id, body, kind) {
   if (body.dataset.filled) return;
   const guide = guides.find((g) => g.id === id);
-  body.innerHTML = `<div class="menu-skeleton" aria-hidden="true"><span></span><span></span><span></span></div><span class="visually-hidden" role="status">${ui.loading}</span>`;
-  try {
-    const doc = await loadGuide(guide);
+  const fill = (doc) => {
     body.innerHTML = kind === 'mega' ? megaHtml(guide, doc) : accHtml(guide, doc);
     body.dataset.filled = '1';
+  };
+  const cached = readyDoc(guide);
+  if (cached) { fill(cached); return; }
+  body.innerHTML = `<div class="menu-skeleton" aria-hidden="true"><span></span><span></span><span></span></div><span class="visually-hidden" role="status">${ui.loading}</span>`;
+  try {
+    fill(await loadGuide(guide));
   } catch {
     body.innerHTML = `<p class="menu-error">${ui.loadError} <a href="#/${guide.id}">${guide.menuLabel}</a></p>`;
   }

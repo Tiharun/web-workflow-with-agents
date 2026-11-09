@@ -1,7 +1,7 @@
 // 홈: 히어로(사이트 이름, 한 줄 요약, 단계 자) + 가이드 입구 카드 3개. (.impeccable/surfaces/home.md)
 import { marked } from '../vendor/marked/marked.esm.js';
 import { siteConfig, guideById } from './site-config.js';
-import { loadGuide } from './md.js';
+import { loadGuide, readyDoc } from './md.js';
 import { buildRuler } from './ruler.js';
 import { icon } from './icons.js';
 import { reveal, drawRuler } from './motion.js';
@@ -12,6 +12,8 @@ export function renderHome(main) {
   document.title = site.name;
   const featured = guideById(home.featuredGuideId);
   const others = guides.filter((g) => g !== featured);
+  const rulerGuide = guideById(siteConfig.ruler.guideId);
+  const cached = readyDoc(rulerGuide); // 이미 받았으면 스켈레톤 없이 바로 그린다
 
   main.innerHTML = `
     <div class="home">
@@ -21,7 +23,7 @@ export function renderHome(main) {
           <p class="hero__lead">${marked.parseInline(home.lead)}</p>
         </div>
         <div class="hero__visual" data-hero-visual>
-          <div class="ruler-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>
+          ${cached ? '' : '<div class="ruler-skeleton" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span></div>'}
         </div>
       </section>
       <section class="container entry" aria-labelledby="entry-title">
@@ -34,16 +36,20 @@ export function renderHome(main) {
     </div>`;
 
   const slot = main.querySelector('[data-hero-visual]');
-  loadGuide(guideById(siteConfig.ruler.guideId))
-    .then((doc) => {
-      const ruler = buildRuler(doc);
-      if (!ruler) throw new Error('no stages');
-      slot.replaceChildren(ruler);
-      drawRuler(ruler);
-    })
-    .catch(() => { slot.hidden = true; });
+  // 그리다 실패하면 칸만 숨긴다(캐시 경로도 같은 처리, 화면 전환은 계속된다).
+  const show = (doc) => { try { showRuler(slot, doc); } catch { slot.hidden = true; } };
+  if (cached) show(cached);
+  else loadGuide(rulerGuide).then(show, () => { slot.hidden = true; });
 
   return reveal(main.querySelector('.home'), '.hero__visual, .entry__grid > li');
+}
+
+/** 단계 자를 칸에 넣는다. 단계가 없으면 칸을 숨긴다. */
+function showRuler(slot, doc) {
+  const ruler = buildRuler(doc);
+  if (!ruler) { slot.hidden = true; return; }
+  slot.replaceChildren(ruler);
+  drawRuler(ruler);
 }
 
 /** 카드 전체가 링크. 소개는 자르지 않는다. */

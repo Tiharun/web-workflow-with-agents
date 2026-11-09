@@ -5,6 +5,7 @@ import { icon } from './icons.js';
 
 const { ui } = siteConfig;
 const cache = new Map();
+const ready = new Map(); // 다 만든 문서. 이미 받은 문서는 스켈레톤 없이 바로 그리는 데 쓴다.
 
 /** 가이드 md를 한 번만 불러와 가공한다. 실패하면 캐시를 비워 다시 시도할 수 있게 한다. */
 export function loadGuide(guide) {
@@ -14,7 +15,11 @@ export function loadGuide(guide) {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.text();
       })
-      .then((text) => buildDoc(guide, text));
+      .then((text) => {
+        const doc = buildDoc(guide, text);
+        ready.set(guide.id, doc);
+        return doc;
+      });
     job.catch(() => cache.delete(guide.id));
     cache.set(guide.id, job);
   }
@@ -22,6 +27,9 @@ export function loadGuide(guide) {
 }
 
 export const isLoaded = (id) => cache.has(id);
+
+/** 다 불러온 문서. 불러오는 중이거나 실패했으면 null. */
+export const readyDoc = (guide) => ready.get(guide.id) ?? null;
 
 /** GitHub 방식 제목 id: 소문자, 글자·숫자·공백·하이픈만 남기고 공백은 하이픈. */
 export function slugify(text) {

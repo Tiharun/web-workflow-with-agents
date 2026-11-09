@@ -1,10 +1,18 @@
 // 모션: GSAP + ScrollTrigger (ADR 0003). 동작 줄이기면 아무것도 하지 않아 글이 바로 보인다.
 // 스크립트가 꺼져 있으면 이 파일이 돌지 않으므로 글은 처음부터 보인다.
+// 한 번에 멀리 이동해 건너뛴 블록은 모션 없이 즉시 보인다(화면 안 블록만 차례로 올라온다).
 import { gsap } from '../vendor/gsap/index.js';
 import { ScrollTrigger } from '../vendor/gsap/ScrollTrigger.js';
 import { motionOK } from './scroll.js';
 
 gsap.registerPlugin(ScrollTrigger);
+
+// 모션이 끝나면 지우는 인라인 속성(배치용 인라인 style은 남긴다)
+const CLEAR = 'opacity,transform,translate,rotate,scale';
+const inViewport = (el) => {
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < innerHeight;
+};
 
 /**
  * 블록이 화면에 들어올 때 한 번만 올라오며 나타난다. 같이 들어온 블록은 차례로(stagger).
@@ -20,9 +28,17 @@ export function reveal(root, selector = ':scope > *') {
     ScrollTrigger.batch(blocks, {
       start: 'top 92%',
       once: true,
-      onEnter: (batch) => gsap.to(batch, {
-        opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.08, overwrite: true, clearProps: 'opacity,transform,translate,rotate,scale',
-      }),
+      // 멀리 이동하면 지나친 블록까지 한 묶음으로 온다. 그 블록들에 stagger가 쌓이면 화면 안 블록이 몇 초씩 늦으므로 바로 보인다.
+      onEnter: (batch) => {
+        const seen = batch.filter(inViewport);
+        gsap.set(batch.filter((el) => !seen.includes(el)), { clearProps: CLEAR });
+        if (seen.length) {
+          gsap.to(seen, {
+            // 차례 간격은 0.08초, 묶음 전체는 0.24초를 넘지 않는다(큰 묶음에서 마지막 블록이 오래 숨지 않게).
+            opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: Math.min(0.08, 0.24 / (seen.length - 1 || 1)), overwrite: true, clearProps: CLEAR,
+          });
+        }
+      },
     });
   });
   return () => ctx.revert();
@@ -43,7 +59,7 @@ export function drawRuler(ruler) {
   const done = () => {
     list.style.removeProperty('--draw');
     stops.forEach((el) => el.style.removeProperty('--tick'));
-    gsap.set([...nums, ...names, loop].filter(Boolean), { clearProps: 'opacity,transform,translate,rotate,scale' });
+    gsap.set([...nums, ...names, loop].filter(Boolean), { clearProps: CLEAR });
   };
   const tl = gsap.timeline({ defaults: { ease: 'expo.out' }, onComplete: done })
     .fromTo(list, { '--draw': 0 }, { '--draw': 1, duration: 1.1, ease: 'power3.inOut' })
