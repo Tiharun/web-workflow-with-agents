@@ -28,3 +28,34 @@ test('broken percent-encoding in the hash does not throw', async ({ page }) => {
   await expect(page.locator('.notice')).toHaveText(ui.stageMissing);
   expect(errors).toEqual([]);
 });
+
+const stageState = (page) => page.evaluate(() => ({
+  y: Math.round(scrollY),
+  notices: [...document.querySelectorAll('.notice')].map((n) => n.textContent),
+  first: document.querySelector('#doc').firstElementChild?.className,
+  role: document.querySelector('.notice')?.getAttribute('role'),
+  focus: document.activeElement === document.querySelector('#doc h1'),
+}));
+const missingExpected = { y: 0, notices: [ui.stageMissing], first: 'notice', role: 'status', focus: true };
+
+test('missing stage on first load shows guide top, notice and focus on title', async ({ page }) => {
+  await openPage(page, '/#/final/없는단계');
+  await expect(page.locator('#doc h1')).toHaveText(finalH1);
+  expect(await stageState(page)).toEqual(missingExpected);
+});
+
+test('missing stage after an in-guide change matches first load', async ({ page }) => {
+  await openPage(page, '/#/final/0단계-준비');
+  await page.evaluate(() => { location.hash = '#/final/없는단계'; });
+  await expect(page.locator('.notice')).toBeVisible();
+  expect(await stageState(page)).toEqual(missingExpected);
+});
+
+test('repeated missing stages keep one notice; guide root clears it', async ({ page }) => {
+  await openPage(page, '/#/final/0단계-준비');
+  await page.evaluate(() => { location.hash = '#/final/없는단계'; });
+  await page.evaluate(() => { location.hash = '#/final/또없음'; });
+  await expect(page.locator('.notice')).toHaveCount(1);
+  await page.evaluate(() => { location.hash = '#/final'; });
+  await expect(page.locator('.notice')).toHaveCount(0);
+});

@@ -46,26 +46,38 @@ export async function renderGuide(main, guide, stageId, { smooth = false } = {})
   placeVisuals(article, guide, doc);
   buildToc(main, guide, doc);
 
-  const target = stageId ? article.querySelector(`#${CSS.escape(stageId)}`) : null;
-  if (stageId && !target) article.prepend(notice(ui.stageMissing));
-  if (target) scrollToTarget(target, smooth);
-  else scrollTo({ top: 0, behavior: 'instant' });
+  // 새로 그린 가이드의 맨 위는 늘 즉시 보인다(부드러운 이동은 단계로 갈 때만).
+  scrollToStage(main, stageId, stageId ? smooth : false);
 
   const offProgress = trackScroll(main, article, doc);
   const offReveal = reveal(article);
   return () => { offProgress(); offReveal(); main.querySelector('#toc')?.close(); };
 }
 
-/** 같은 가이드 안에서 단계만 바뀔 때 */
+/**
+ * 단계로 이동한다. 처음 그릴 때와 같은 가이드 안에서 단계만 바뀔 때 모두 이 함수만 거친다.
+ * 없는 단계면 안내를 본문 맨 앞에 하나만 두고, 즉시 맨 위로 가서 초점을 가이드 제목으로 옮긴다.
+ */
 export function scrollToStage(main, stageId, smooth) {
   const article = main.querySelector('#doc');
   const target = stageId ? article?.querySelector(`#${CSS.escape(stageId)}`) : null;
   main.querySelector('.notice')?.remove();
-  if (target) scrollToTarget(target, smooth);
-  else {
-    if (stageId) article?.prepend(notice(ui.stageMissing));
+  if (target) {
+    scrollToTarget(target, smooth);
+  } else if (stageId) {
+    article?.prepend(notice(ui.stageMissing));
+    scrollTo({ top: 0, behavior: 'instant' });
+    focusTitle(article);
+  } else {
     scrollTo({ top: 0, behavior: smooth && motionOK() ? 'smooth' : 'instant' });
   }
+}
+
+function focusTitle(article) {
+  const h1 = article?.querySelector('h1');
+  if (!h1) return;
+  if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
+  h1.focus({ preventScroll: true });
 }
 
 const skeleton = () => `
