@@ -32,7 +32,8 @@ export function slugify(text) {
     .replace(/\s/g, '-');
 }
 
-function buildDoc(guide, text) {
+/** md 원문 → 화면용 template과 제목·단계 데이터. fetch와 분리해 고정 md 조각으로 테스트한다. */
+export function buildDoc(guide, text) {
   const tpl = document.createElement('template');
   tpl.innerHTML = marked.parse(text, { gfm: true });
   const root = tpl.content;
@@ -40,7 +41,7 @@ function buildDoc(guide, text) {
   const headings = assignHeadingIds(root);
   const roles = collectRoles(root);
 
-  markLinks(root);
+  markLinks(root, guide);
   shapeCodeBlocks(root);
   shapeTables(root);
   shapeChecklists(root);
@@ -55,15 +56,19 @@ function buildDoc(guide, text) {
 
 function assignHeadingIds(root) {
   const seen = new Map();
+  const used = new Set();
   const list = [];
   const stack = [];
   root.querySelectorAll('h1, h2, h3, h4').forEach((el) => {
     const level = Number(el.tagName[1]);
     const title = el.textContent.trim();
     const base = slugify(title) || 'section';
-    const n = seen.get(base) ?? 0;
+    // 같은 base는 -1, -2…를 붙이고, 그 id를 이미 다른 제목이 쓰고 있으면(예: 'a-1' 제목) 다음 번호로 넘긴다.
+    let n = seen.get(base) ?? 0;
+    let id = n ? `${base}-${n}` : base;
+    while (used.has(id)) id = `${base}-${++n}`;
     seen.set(base, n + 1);
-    const id = n ? `${base}-${n}` : base;
+    used.add(id);
     el.id = id;
     while (stack.length && stack[stack.length - 1].level >= level) stack.pop();
     const parentId = level > 1 && stack.length && stack[stack.length - 1].level > 1 ? stack[stack.length - 1].id : null;
@@ -132,20 +137,35 @@ function attachTerms(root, roles) {
   });
 }
 
-function markLinks(root) {
+const decode = (s) => {
+  try { return decodeURIComponent(s); } catch { return s; }
+};
+
+/**
+ * md 안 링크 → 사이트 주소(순수 함수). 외부 링크는 그대로 두고 external로 알린다.
+ * '#조각'은 지금 가이드의 그 제목으로, 옛 가이드 파일 이름(legacyNames)은 '#/<가이드 id>[/<제목 id>]'로 바꾼다.
+ */
+export function rewriteHref(href, guide) {
+  if (/^https?:\/\//i.test(href)) return { href, external: true };
+  if (href.startsWith('#/')) return { href, external: false }; // 이미 사이트 주소
+  const hash = href.indexOf('#');
+  const path = (hash < 0 ? href : href.slice(0, hash)).replace(/\?.*$/, '');
+  const fragment = hash < 0 ? '' : decode(href.slice(hash + 1));
+  if (!path && hash === 0) return { href: fragment ? `#/${guide.id}/${fragment}` : `#/${guide.id}`, external: false };
+  const name = decode(path).split(/[\\/]/).pop();
+  const target = siteConfig.guides.find((g) => g.legacyNames.includes(name));
+  if (!target) return { href, external: false };
+  return { href: fragment ? `#/${target.id}/${fragment}` : `#/${target.id}`, external: false };
+}
+
+function markLinks(root, guide) {
   root.querySelectorAll('a[href]').forEach((a) => {
-    const href = a.getAttribute('href');
-    if (/^https?:\/\//i.test(href)) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.insertAdjacentHTML('beforeend', `<span class="visually-hidden"> ${ui.newTab}</span>`);
-      return;
-    }
-    let name = href;
-    try { name = decodeURIComponent(href); } catch { /* 그대로 둔다 */ }
-    name = name.split(/[\\/]/).pop();
-    const target = siteConfig.guides.find((g) => g.legacyNames.includes(name));
-    if (target) a.setAttribute('href', `#/${target.id}`);
+    const { href, external } = rewriteHref(a.getAttribute('href'), guide);
+    a.setAttribute('href', href);
+    if (!external) return;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.insertAdjacentHTML('beforeend', `<span class="visually-hidden"> ${ui.newTab}</span>`);
   });
 }
 
@@ -153,6 +173,8 @@ const BOX = /[─│┌└┐┘├┤▶◀]/;
 
 function shapeCodeBlocks(root) {
   root.querySelectorAll('pre > code').forEach((code) => {
+    // marked가 붙인 끝 줄바꿈을 지워 복사한 글이 md 코드 블록과 같게 한다(화면 높이는 그대로).
+    code.textContent = code.textContent.replace(/\n$/, '');
     const pre = code.parentElement;
     const lang = (code.className.match(/language-(\S+)/) || [])[1] ?? '';
     if (BOX.test(code.textContent)) {
@@ -277,18 +299,47 @@ function shapeBadges(root) {
     const frag = document.createDocumentFragment();
     let last = 0;
     for (const m of value.matchAll(BADGE)) {
-      const before = value.slice(last, m.index);
-      frag.append(before && !/\s$/.test(before) ? `${before} ` : before);
-      const badge = document.createElement('span');
-      badge.className = 'badge';
-      badge.dataset.kind = KIND[m[2]];
-      if (KIND[m[2]] === 'measure') badge.innerHTML = icon('check', 'icon badge__icon');
-      badge.append(`${m[1]}${m[2]}${m[3]}`);
-      frag.append(badge);
+      frag.append(spaced(value.slice(last, m.index)));
+      frag.append(makeBadge(m[2], `${m[1]}${m[2]}${m[3]}`));
       last = m.index + m[0].length;
     }
     frag.append(value.slice(last));
     node.replaceWith(frag);
+  });
+  shapeSplitBadges(root);
+}
+
+const spaced = (before) => (before && !/\s$/.test(before) ? `${before} ` : before);
+
+function makeBadge(word, ...content) {
+  const badge = document.createElement('span');
+  badge.className = 'badge';
+  badge.dataset.kind = KIND[word];
+  if (KIND[word] === 'measure') badge.innerHTML = icon('check', 'icon badge__icon');
+  badge.append(...content);
+  return badge;
+}
+
+// 괄호 안에 인라인 코드 등이 끼어 글자 조각이 나뉜 경우: "실행됩니다(`a`, 측정)" → 앞 조각의 '('부터 뒤 조각의 ')'까지 배지로 묶는다.
+const SPLIT_END = /^[^()]{0,80}?(측정|검색 확인|추측)[^()]{0,80}?\)/;
+
+function shapeSplitBadges(root) {
+  textNodes(root, (n) => SPLIT_END.test(n.nodeValue)).forEach((end) => {
+    const mids = [];
+    let start = end.previousSibling;
+    while (start?.nodeType === Node.ELEMENT_NODE && start.matches('code, strong, em, a')) {
+      mids.unshift(start);
+      start = start.previousSibling;
+    }
+    if (!mids.length || start?.nodeType !== Node.TEXT_NODE) return;
+    const open = start.nodeValue.lastIndexOf('(');
+    if (open < 0 || start.nodeValue.includes(')', open)) return;
+    const close = end.nodeValue.indexOf(')');
+    const word = end.nodeValue.match(SPLIT_END)[1];
+    const badge = makeBadge(word, start.nodeValue.slice(open + 1), ...mids, end.nodeValue.slice(0, close));
+    start.nodeValue = spaced(start.nodeValue.slice(0, open));
+    end.nodeValue = end.nodeValue.slice(close + 1);
+    start.after(badge);
   });
 }
 

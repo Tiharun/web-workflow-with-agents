@@ -1,4 +1,4 @@
-// Playwright 설정: e2e 한 프로젝트 + 시각 대조 8 프로젝트(4폭 × 라이트·다크). 스펙 §6.
+// Playwright 설정: DOM 단위 한 프로젝트 + e2e 한 프로젝트 + 시각 대조 8 프로젝트(4폭 × 라이트·다크). 스펙 §6.
 import { defineConfig } from '@playwright/test';
 
 const widths = [375, 768, 1280, 1440];
@@ -19,6 +19,7 @@ export default defineConfig({
   snapshotPathTemplate: '{testDir}/{testFileDir}/__screenshots__/{platform}/{projectName}/{arg}{ext}',
   expect: { toHaveScreenshot: { maxDiffPixelRatio: 0.002 } },
   projects: [
+    { name: 'dom', testMatch: '**/dom/**/*.spec.mjs', use: { viewport: { width: 1280, height: 800 } } },
     { name: 'e2e', testMatch: '**/e2e/**/*.spec.mjs', use: { viewport: { width: 1280, height: 800 }, colorScheme: 'light' } },
     ...widths.flatMap((w) => schemes.map((scheme) => ({
       name: `visual-${w}-${scheme}`,
