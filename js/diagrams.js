@@ -169,3 +169,78 @@ export function docMap(doc, guide, item) {
   root.append(list);
   return root;
 }
+
+/** 표 칸을 '→'로 나눈 토큰들. 토큰은 조각 { text, code }[]이고, md 코드(`…`)는 code 조각으로 남긴다. */
+function splitCell(cell) {
+  const tokens = [[]];
+  for (const node of cell?.childNodes ?? []) {
+    const code = node.nodeName === 'CODE';
+    node.textContent.split('→').forEach((piece, i) => {
+      if (i) tokens.push([]);
+      if (piece) tokens.at(-1).push({ text: piece, code });
+    });
+  }
+  return tokens
+    .map((parts) => {
+      if (parts.length) {
+        parts[0] = { ...parts[0], text: parts[0].text.trimStart() };
+        parts[parts.length - 1] = { ...parts.at(-1), text: parts.at(-1).text.trimEnd() };
+      }
+      return parts.filter((p) => p.text);
+    })
+    .filter((parts) => parts.length);
+}
+
+/**
+ * 상황별 빠른 경로: 표 행마다 상황 이름 + 순서 칸을 '→'로 나눈 칩 줄. '[n]'은 같은 문서의 '[n]' 단계 제목 링크(뒤 글자는 글 칩),
+ * 제목이 없거나 그 밖의 토큰은 글 칩이다. '→'가 없는(토큰 2개 미만) 행은 경로가 아니라서 뺀다.
+ * 화살표는 칸 뒤에 붙여 줄이 화살표로 시작하지 않게 한다(줄 끝 화살표가 '다음 줄로 이어짐'을 뜻한다).
+ */
+export function quickPaths(doc, guide, item) {
+  const table = firstTable(sectionOf(doc, item.headingId));
+  if (!table) return null;
+  const [nc, pc] = [item.columns.name, item.columns.path].map((name) => col(table, name));
+  if (nc < 0 || pc < 0) return null;
+  const steps = new Map();
+  for (const h of doc.headings.filter((x) => x.level === 3)) {
+    const b = parseBracket(h.title);
+    if (b && !steps.has(b.num)) steps.set(b.num, { id: h.id, name: b.name });
+  }
+  const rows = el('ol', 'paths__rows');
+  for (const row of table.rows) {
+    const tokens = splitCell(row[pc]);
+    if (tokens.length < 2) continue;
+    const seq = el('ol', 'paths__seq');
+    tokens.forEach((parts, i) => {
+      const token = parts.map((p) => p.text).join('');
+      const li = el('li', 'paths__item');
+      const m = token.match(/^\[(\d+)\]\s*(.*)$/);
+      const step = m && steps.get(m[1]);
+      if (step) {
+        const a = el('a', 'chip paths__step');
+        a.href = `#/${guide.id}/${step.id}`;
+        a.dataset.smooth = '';
+        const n = el('span', null, m[1]);
+        n.setAttribute('aria-hidden', 'true');
+        a.append(n, el('span', 'visually-hidden', `[${m[1]}] ${step.name}`));
+        li.append(a);
+        if (m[2]) li.append(el('span', 'paths__text paths__note', m[2])); // '[4] hallmark'·'[5]부터 진행': 단계에 딸린 말이라 칩이 아니다
+      } else {
+        const chip = el('span', 'chip paths__text');
+        chip.append(...parts.map((p) => (p.code ? el('span', 'paths__code', p.text) : p.text)));
+        li.append(chip);
+      }
+      if (i < tokens.length - 1) li.append(svg('right', 'paths__arrow'));
+      seq.append(li);
+    });
+    const li = el('li', 'paths__row');
+    li.append(el('p', 'paths__name', row[nc].textContent.trim()), seq);
+    rows.append(li);
+  }
+  if (!rows.children.length) return null;
+  const root = el('div', 'paths');
+  root.setAttribute('role', 'group');
+  root.setAttribute('aria-labelledby', item.headingId);
+  root.append(rows);
+  return root;
+}

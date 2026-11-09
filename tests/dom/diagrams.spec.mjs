@@ -105,3 +105,35 @@ test('doc map returns null without its table', async ({ page }) => {
   const r = await build(page, '# T\n\n## 2. 문서 지도 — 어떤 파일이 무엇의 기준인가\n\n표 없음.\n', 'final', item('doc-map'));
   expect(r.ok).toBe(false);
 });
+
+test('quick paths: one row per path, [n] steps link to their headings', async ({ page }) => {
+  const r = await build(page, md('design'), 'design', item('quick-paths'));
+  expect(r.ok).toBe(true);
+  await expect(page.locator('#out .paths__row')).toHaveCount(5); // 6행 중 '→' 없는 메모 행 제외
+  const first = page.locator('#out .paths__row').first();
+  expect(await first.locator('.paths__step [aria-hidden]').allTextContents()).toEqual(['1', '2', '3', '4', '5', '6', '8', '9']);
+  await expect(first.locator('.paths__text')).toHaveText(['hallmark']);
+  await expect(first.locator('.paths__step').first()).toHaveAccessibleName('[1] 맥락 정리');
+  await expect(page.locator('#out .paths__text', { hasText: '<경로>' })).toHaveCount(1); // 마크업이 아니라 글자
+  const hs = await page.locator('#out a').evaluateAll((as) => as.map((a) => decodeURIComponent(a.hash).split('/')[2]));
+  expect(hs.length).toBeGreaterThan(0);
+  for (const h of hs) expect(r.ids).toContain(h);
+  await expect(page.locator('#out .paths')).toHaveAttribute('aria-labelledby', item('quick-paths').headingId);
+});
+
+test('a step number without its heading stays as text', async ({ page }) => {
+  await build(page, '# T\n\n## 3. 상황별 빠른 경로\n\n| 상황 | 순서 |\n|---|---|\n| 가 | [1] → [7] 없음 |\n\n### [1] 하나 — s\n', 'design', item('quick-paths'));
+  await expect(page.locator('#out .paths__step')).toHaveCount(1);
+  await expect(page.locator('#out .paths__text')).toHaveText(['[7] 없음']);
+});
+
+test('rows without a path are skipped and an empty table gives null', async ({ page }) => {
+  const r = await build(page, '# T\n\n## 3. 상황별 빠른 경로\n\n| 상황 | 순서 |\n|---|---|\n| 메모 | (설명만) |\n', 'design', item('quick-paths'));
+  expect(r.ok).toBe(false);
+});
+
+test('quick paths keep md code spans as code pieces', async ({ page }) => {
+  await build(page, md('design'), 'design', item('quick-paths'));
+  await expect(page.locator('#out .paths__code', { hasText: '/hallmark redesign <경로>' })).toHaveCount(1);
+  await expect(page.locator('#out .paths__text', { hasText: '로 진단' }).locator('.paths__code')).toHaveText('/interfaces:better-interface');
+});

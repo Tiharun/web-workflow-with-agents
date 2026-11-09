@@ -2,7 +2,7 @@
 // M6에서 비주얼을 더하려면 visualTypes에 type 하나, siteConfig.visuals에 항목 하나를 더한다.
 import { siteConfig } from './site-config.js';
 import { buildRuler } from './ruler.js';
-import { stepsFlow, designFlow, docMap } from './diagrams.js';
+import { stepsFlow, designFlow, docMap, quickPaths } from './diagrams.js';
 
 /** type → (doc, guide, item) => Element | null(HTML·SVG 요소). item은 siteConfig.visuals 항목. null이면 그 비주얼만 숨긴다(오류 아님). builder는 동기 함수다. */
 export const visualTypes = {
@@ -11,6 +11,7 @@ export const visualTypes = {
   'steps-flow': stepsFlow,
   'design-flow': designFlow,
   'doc-map': docMap,
+  'quick-paths': quickPaths,
 };
 
 /**

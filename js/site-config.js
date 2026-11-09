@@ -64,6 +64,7 @@ export const siteConfig = {
     { guideId: 'steps', headingId: '전체-흐름-한눈에-보기', type: 'steps-flow', column: '코드 작성' },
     { guideId: 'design', headingId: '1-전체-흐름-한눈에-보기', type: 'design-flow' },
     { guideId: 'final', headingId: '2-문서-지도--어떤-파일이-무엇의-기준인가', type: 'doc-map', columns: { file: '파일', stage: '만드는 단계·스킬', role: '역할' } },
+    { guideId: 'design', headingId: '3-상황별-빠른-경로', type: 'quick-paths', columns: { name: '상황', path: '순서' } },
   ],
 
   // 화면 글(문서 밖 안내 문구). 한 곳에서 고친다.
