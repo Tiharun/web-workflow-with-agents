@@ -12,6 +12,10 @@ const PATHS = {
   moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>',
   loop: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20v-4.7h4.7"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
+  // 코드 작성 정도(✗ 없음 · △ 일부 · ○ 전부): 빈 원, 왼쪽 반 채움, 채움
+  'mark-none': '<circle cx="12" cy="12" r="7"/>',
+  'mark-part': '<circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 0 0 0 14Z" fill="currentColor"/>',
+  'mark-full': '<circle cx="12" cy="12" r="7" fill="currentColor"/>',
 };
 
 export const icon = (name, cls = 'icon') =>

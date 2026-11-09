@@ -101,3 +101,19 @@ test('the guide ruler stays inside the text column at 375px', async ({ page }) =
   expect(box.right).toBeLessThanOrEqual(box.docRight);
   expect(box.extra).toBe(0);
 });
+
+// 본문 목록 규칙(.doc ol 들여쓰기, li + li 간격)이 비주얼 목록에 새면 첫 칸이 밀리고 칸이 계단처럼 내려간다(M6에서 측정: 22px·4px).
+test('visual lists ignore the body list indent and spacing', async ({ page }) => {
+  for (const id of new Set(siteConfig.visuals.map((x) => x.guideId))) {
+    await openPage(page, `/#/${id}`);
+    const lists = await page.locator('#doc .visual ol').evaluateAll((ols) => ols.map((ol) => {
+      const items = [...ol.children];
+      return { pad: getComputedStyle(ol).paddingLeft, gaps: items.slice(1).map((li) => getComputedStyle(li).marginTop) };
+    }));
+    expect(lists.length, id).toBeGreaterThan(0);
+    for (const l of lists) {
+      expect(l.pad, id).toBe('0px');
+      for (const g of l.gaps) expect(g, id).toBe('0px');
+    }
+  }
+});

@@ -60,6 +60,9 @@ export const siteConfig = {
 
   visuals: [
     { guideId: 'final', headingId: '1-전체-루프-한눈에', type: 'stage-ruler' },
+    // 도식(js/diagrams.js). column·columns는 md 표의 열 이름 원문이다.
+    { guideId: 'steps', headingId: '전체-흐름-한눈에-보기', type: 'steps-flow', column: '코드 작성' },
+    { guideId: 'design', headingId: '1-전체-흐름-한눈에-보기', type: 'design-flow' },
   ],
 
   // 화면 글(문서 밖 안내 문구). 한 곳에서 고친다.

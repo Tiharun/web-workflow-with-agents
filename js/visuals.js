@@ -2,11 +2,14 @@
 // M6에서 비주얼을 더하려면 visualTypes에 type 하나, siteConfig.visuals에 항목 하나를 더한다.
 import { siteConfig } from './site-config.js';
 import { buildRuler } from './ruler.js';
+import { stepsFlow, designFlow } from './diagrams.js';
 
-/** type → (doc, guide) => Element | null(HTML·SVG 요소). null이면 그 비주얼만 숨긴다(오류 아님). builder는 동기 함수다. */
+/** type → (doc, guide, item) => Element | null(HTML·SVG 요소). item은 siteConfig.visuals 항목. null이면 그 비주얼만 숨긴다(오류 아님). builder는 동기 함수다. */
 export const visualTypes = {
   // 단계 자는 최종 워크플로우 가이드에만 붙는다(다른 가이드의 문서로는 단계를 만들 수 없다).
   'stage-ruler': (doc, guide) => (guide.id === siteConfig.ruler.guideId ? buildRuler(doc) : null),
+  'steps-flow': stepsFlow,
+  'design-flow': designFlow,
 };
 
 /**
@@ -16,7 +19,8 @@ export const visualTypes = {
  */
 export function placeVisuals(article, guide, doc, list = siteConfig.visuals) {
   const last = new Map(); // 제목 → 그 제목 뒤에 마지막으로 넣은 figure (같은 제목이면 등록 순서대로 잇는다)
-  for (const { guideId, headingId, type } of list) {
+  for (const item of list) {
+    const { guideId, headingId, type } = item;
     if (guideId !== guide.id) continue;
     const heading = article.querySelector(`#${CSS.escape(headingId)}`);
     if (!heading) continue;
@@ -27,7 +31,7 @@ export function placeVisuals(article, guide, doc, list = siteConfig.visuals) {
     }
     let el;
     try {
-      el = build(doc, guide);
+      el = build(doc, guide, item);
       if (el != null && !(el instanceof Element)) throw new TypeError('builder가 요소가 아닌 값을 돌려줌');
     } catch (err) {
       reportError(new Error(`비주얼을 그리지 못함: ${type} → #${headingId}`, { cause: err }));
