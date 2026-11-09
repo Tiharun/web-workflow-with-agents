@@ -1,4 +1,5 @@
 // 툴팁: 포인터·포커스·탭으로 열고 Esc로 닫는다. 툴팁 위로 포인터를 옮겨도 유지한다(WCAG 1.4.13).
+// 스크롤: 초점을 가진 주인이 화면 안이면 툴팁이 따라가고, 포인터로 연 툴팁은 닫는다.
 let tip;
 let owner = null;
 let hideTimer = 0;
@@ -35,7 +36,12 @@ export function initTooltips() {
     if (!tip.contains(e.target)) hide();
   });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !tip.hidden) { e.stopPropagation(); hide(); } }, true);
-  addEventListener('scroll', () => { if (!tip.hidden) hide(); }, { passive: true });
+  addEventListener('scroll', () => {
+    if (tip.hidden) return;
+    const r = owner === document.activeElement && owner.getBoundingClientRect();
+    if (r && r.bottom > 0 && r.top < innerHeight) place(owner);
+    else hide();
+  }, { passive: true });
   addEventListener('resize', hide);
 }
 
