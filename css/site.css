@@ -387,6 +387,7 @@ button { cursor: pointer; color: inherit; }
 .docmap__files { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin: 0; padding: 0; list-style: none; }
 .docmap__file { font-family: var(--font-outlier); }
 .docmap__tag { display: block; color: var(--color-accent-deep); font-family: var(--font-body); font-weight: 600; }
+.docmap__stage { margin-left: var(--space-2xs); color: var(--color-muted); font-family: var(--font-body); font-variant-numeric: tabular-nums; }
 .docmap__arrow { display: none; } /* 세로형은 위아래 순서가 분명하다 */
 @container (min-width: 40rem) {
   .docmap__lanes { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--space-lg); }

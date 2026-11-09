@@ -78,10 +78,11 @@ export function buildFlow(items, labelledBy, legend = null) {
     a.dataset.smooth = '';
     const num = el('span', 'flow__num', it.num);
     num.setAttribute('aria-hidden', 'true');
-    const node = svg(`mark-${it.mark ?? 'none'}`, 'flow__mark'); // 표시가 없는 단계는 빈 원 마디
+    const node = svg(`mark-${it.mark ?? 'node'}`, 'flow__mark'); // 표시가 없는 단계는 빈 원 마디
     node.setAttribute('aria-hidden', 'true');
     const name = el('span', 'flow__name');
     name.append(el('span', 'visually-hidden', `${it.label} `), it.name);
+    if (it.optional) name.append(el('span', 'visually-hidden', ' (선택)')); // 점선 마디의 뜻을 낭독기에도
     a.append(num, node, name);
     li.append(a);
     list.append(li);
@@ -139,10 +140,11 @@ export function docMap(doc, guide, item) {
   if (fc < 0 || sc < 0) return null;
   const lanes = new Map();
   for (const row of table.rows) {
-    const token = row[sc]?.textContent.trim().match(/^[\d~]+/)?.[0];
-    if (!token) continue;
+    const stage = row[sc]?.textContent.trim().match(/^[\d~]+(?:·[\d~]+)*/)?.[0]; // '5·7'처럼 여러 단계면 첫 단계 칸에 두고 원문 토큰을 붙인다
+    if (!stage) continue;
+    const token = stage.split('·')[0];
     if (!lanes.has(token)) lanes.set(token, []);
-    lanes.get(token).push({ file: row[fc].textContent.trim(), tag: rc < 0 ? null : row[rc]?.querySelector('strong')?.textContent.trim() });
+    lanes.get(token).push({ file: row[fc].textContent.trim(), stage: stage === token ? null : stage, tag: rc < 0 ? null : row[rc]?.querySelector('strong')?.textContent.trim() });
   }
   if (!lanes.size) return null;
   const names = new Map(stagesFromDoc(doc).map((s) => [s.num, s.name]));
@@ -159,6 +161,7 @@ export function docMap(doc, guide, item) {
     for (const f of files) {
       const chip = el('li', f.tag ? 'chip docmap__file is-key' : 'chip docmap__file');
       chip.append(...pathText(f.file));
+      if (f.stage) chip.append(el('span', 'docmap__stage', f.stage));
       if (f.tag) chip.append(el('span', 'docmap__tag', f.tag));
       ul.append(chip);
     }
@@ -204,7 +207,7 @@ export function quickPaths(doc, guide, item) {
   const steps = new Map();
   for (const h of doc.headings.filter((x) => x.level === 3)) {
     const b = parseBracket(h.title);
-    if (b && !steps.has(b.num)) steps.set(b.num, { id: h.id, name: b.name });
+    if (b && !steps.has(b.num)) steps.set(b.num, { id: h.id, name: b.optional ? `${b.name} (선택)` : b.name });
   }
   const rows = el('ol', 'paths__rows');
   for (const row of table.rows) {

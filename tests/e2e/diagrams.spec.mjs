@@ -58,3 +58,12 @@ test('a quick path step link scrolls to its stage', async ({ page }) => {
   await expect(page.locator(`#doc [id="${id}"]`)).toBeInViewport();
   await expect(page.locator('#doc .visual .paths')).toHaveCount(1);
 });
+
+test('a visual hidden from screen readers hides its figure too', async ({ page }) => {
+  const v = items.find((x) => x.type === 'doc-map');
+  await openPage(page, `/#/${v.guideId}`);
+  await expect(page.locator(`[id="${v.headingId}"] + figure.visual`)).toHaveAttribute('aria-hidden', 'true');
+  const flow = items.find((x) => x.type === 'steps-flow');
+  await openPage(page, `/#/${flow.guideId}`);
+  await expect(page.locator(`[id="${flow.headingId}"] + figure.visual`)).not.toHaveAttribute('aria-hidden');
+});

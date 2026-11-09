@@ -42,6 +42,7 @@ export function placeVisuals(article, guide, doc, list = siteConfig.visuals) {
     if (!el) continue;
     const fig = document.createElement('figure');
     fig.className = 'visual';
+    if (el.getAttribute('aria-hidden') === 'true') fig.setAttribute('aria-hidden', 'true'); // 내용 없는 figure가 낭독기에 남지 않게
     fig.append(el);
     (last.get(heading) ?? heading).after(fig);
     last.set(heading, fig);

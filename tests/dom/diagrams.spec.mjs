@@ -137,3 +137,27 @@ test('quick paths keep md code spans as code pieces', async ({ page }) => {
   await expect(page.locator('#out .paths__code', { hasText: '/hallmark redesign <경로>' })).toHaveCount(1);
   await expect(page.locator('#out .paths__text', { hasText: '로 진단' }).locator('.paths__code')).toHaveText('/interfaces:better-interface');
 });
+
+test('a step with no code (✗) is drawn as a cross, never as the circle md uses for ○', async ({ page }) => {
+  await build(page, md('steps'), 'steps', item('steps-flow'));
+  await expect(page.locator('#out .flow__step[data-mark="none"] .flow__mark circle')).toHaveCount(0);
+  await expect(page.locator('#out .flow__step[data-mark="none"] .flow__mark path')).not.toHaveCount(0);
+  // 범례의 ✗ 옆 그림도 같은 ×
+  await expect(page.locator('#out .flow__legend-key', { hasText: '✗' }).locator('circle')).toHaveCount(0);
+  // 표시가 없는 흐름의 마디는 빈 원 그대로
+  await build(page, md('design'), 'design', item('design-flow'));
+  await expect(page.locator('#out .flow__step').first().locator('.flow__mark circle')).toHaveCount(1);
+});
+
+test('optional steps keep (선택) in their accessible name', async ({ page }) => {
+  await build(page, md('design'), 'design', item('design-flow'));
+  await expect(page.locator('#out .flow__step.is-optional .flow__link')).toHaveAccessibleName('[3] 시각 탐색 (선택)');
+  await build(page, md('design'), 'design', item('quick-paths'));
+  await expect(page.locator('#out .paths__step', { hasText: '3' }).first()).toHaveAccessibleName('[3] 시각 탐색 (선택)');
+});
+
+test('doc map keeps the full stage token when a file spans stages (5·7)', async ({ page }) => {
+  await build(page, md('final'), 'final', item('doc-map'));
+  await expect(page.locator('#out .docmap__file', { hasText: 'plans/' }).locator('.docmap__stage')).toHaveText('5·7');
+  await expect(page.locator('#out .docmap__stage')).toHaveCount(1); // 칸 번호와 같은 파일에는 붙지 않는다
+});

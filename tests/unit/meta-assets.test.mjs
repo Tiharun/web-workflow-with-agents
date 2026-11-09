@@ -13,10 +13,12 @@ test('meta images have their declared sizes', () => {
   assert.deepEqual(png(site.ogImage), [1200, 630]);
 });
 
-test('favicon colors are the accent tokens of both themes', () => {
+test('favicon colors are the accent tokens of each theme, background and mark in place', () => {
   const tokens = readFileSync('css/tokens.css', 'utf8');
   const val = (name, nth) => [...tokens.matchAll(new RegExp(`--${name}: (#[0-9a-f]{6})`, 'gi'))][nth][1].toLowerCase();
-  const want = new Set([val('color-accent', 0), val('color-accent-ink', 0), val('color-accent', 1), val('color-accent-ink', 1)]);
-  const got = new Set(readFileSync(site.icons.svg, 'utf8').match(/#[0-9a-f]{6}/gi).map((h) => h.toLowerCase()));
-  assert.deepEqual(got, want);
+  const svg = readFileSync(site.icons.svg, 'utf8');
+  const [light, dark] = svg.split('@media (prefers-color-scheme: dark)');
+  const fill = (css, cls) => css.match(new RegExp(`\.${cls} \{ fill: (#[0-9a-f]{6}); \}`, 'i'))[1].toLowerCase();
+  assert.deepEqual([fill(light, 'bg'), fill(light, 'fg')], [val('color-accent', 0), val('color-accent-ink', 0)]);
+  assert.deepEqual([fill(dark, 'bg'), fill(dark, 'fg')], [val('color-accent', 1), val('color-accent-ink', 1)]);
 });

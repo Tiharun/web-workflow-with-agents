@@ -13,7 +13,8 @@ const PATHS = {
   loop: '<path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.7"/><path d="M20 4v4.7h-4.7"/><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.3"/><path d="M4 20v-4.7h4.7"/>',
   chevron: '<path d="m6 9 6 6 6-6"/>',
   // 코드 작성 정도(✗ 없음 · △ 일부 · ○ 전부): 빈 원, 왼쪽 반 채움, 채움
-  'mark-none': '<circle cx="12" cy="12" r="7"/>',
+  'mark-node': '<circle cx="12" cy="12" r="7"/>', // 표시 없는 흐름 마디
+  'mark-none': '<path d="M8 8l8 8M16 8l-8 8"/>', // md ✗(코드 없음). md ○(전부)와 헷갈리지 않게 원이 아니다
   'mark-part': '<circle cx="12" cy="12" r="7"/><path d="M12 5a7 7 0 0 0 0 14Z" fill="currentColor"/>',
   'mark-full': '<circle cx="12" cy="12" r="7" fill="currentColor"/>',
 };
