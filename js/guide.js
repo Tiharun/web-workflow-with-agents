@@ -4,16 +4,18 @@ import { loadGuide } from './md.js';
 import { buildRuler } from './ruler.js';
 import { icon } from './icons.js';
 import { escapeHtml } from './header.js';
-import { motionOK, scrollToTarget } from './scroll.js';
+import { motionOK, scrollToTarget, focusEl } from './scroll.js';
 import { reveal } from './motion.js';
 
 const { ui, site } = siteConfig;
 
 /**
- * @param {{ smooth?: boolean, onRetry: () => void }} options onRetry: [다시 시도] — 라우터가 지금 주소로 다시 그리고 정리 함수도 받는다.
+ * @param {{ smooth?: boolean, focusTop?: boolean, onRetry: () => void }} options
+ *   onRetry: [다시 시도] — 라우터가 지금 주소로 다시 그리고 정리 함수도 받는다.
+ *   focusTop: 사용자가 누른 이동(다시 시도 포함)이면 결과 화면의 제목으로 초점을 옮긴다.
  * @returns {Promise<() => void>} 화면을 떠날 때 부르는 정리 함수
  */
-export async function renderGuide(main, guide, stageId, { smooth = false, onRetry } = {}) {
+export async function renderGuide(main, guide, stageId, { smooth = false, focusTop = false, onRetry } = {}) {
   main.innerHTML = `
     <div class="guide" data-guide="${guide.id}">
       <div class="container guide__layout">
@@ -39,6 +41,8 @@ export async function renderGuide(main, guide, stageId, { smooth = false, onRetr
     article.removeAttribute('aria-busy');
     article.innerHTML = errorHtml(guide);
     article.querySelector('[data-retry]').addEventListener('click', () => onRetry());
+    // 다시 시도 버튼이 다시 그려지며 사라져도 초점이 body로 떨어지지 않게 한다.
+    if (focusTop) focusEl(article.querySelector('h1'));
     return () => {};
   }
   if (!main.contains(article)) return () => {};
@@ -51,7 +55,7 @@ export async function renderGuide(main, guide, stageId, { smooth = false, onRetr
   buildToc(main, guide, doc);
 
   // 새로 그린 가이드의 맨 위는 늘 즉시 보인다(부드러운 이동은 단계로 갈 때만).
-  scrollToStage(main, stageId, stageId ? smooth : false);
+  scrollToStage(main, stageId, stageId ? smooth : false, { focusTop });
 
   const offProgress = trackScroll(main, article, doc);
   const offReveal = reveal(article);
@@ -67,23 +71,29 @@ export function scrollToStage(main, stageId, smooth, { focusTop = false } = {}) 
   const article = main.querySelector('#doc');
   const target = stageId ? article?.querySelector(`#${CSS.escape(stageId)}`) : null;
   main.querySelector('.notice')?.remove();
+  announce('');
   if (target) {
     scrollToTarget(target, smooth);
   } else if (stageId) {
     article?.prepend(notice(ui.stageMissing));
     scrollTo({ top: 0, behavior: 'instant' });
-    focusTitle(article);
+    focusEl(article?.querySelector('h1'));
+    announce(ui.stageMissing);
   } else {
     scrollTo({ top: 0, behavior: smooth && motionOK() ? 'smooth' : 'instant' });
-    if (focusTop) focusTitle(article);
+    if (focusTop) focusEl(article?.querySelector('h1'));
   }
 }
 
-function focusTitle(article) {
-  const h1 = article?.querySelector('h1');
-  if (!h1) return;
-  if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
-  h1.focus({ preventScroll: true });
+// 화면 낭독기 알림: 처음부터 있던 빈 #live에 글을 나중에 넣어야 확실히 읽힌다(글이 든 role="status"를 새로 끼우면 놓친다).
+// 제목 초점 알림과 겹치지 않게 조금 뒤에 넣고, 같은 글이 다시 와도 읽히도록 먼저 비운다. 이 알림 글만 지운다(복사 알림은 두기).
+let announceTimer;
+function announce(text) {
+  const live = document.getElementById('live');
+  if (!live) return;
+  clearTimeout(announceTimer);
+  if (live.textContent === ui.stageMissing) live.textContent = '';
+  if (text) announceTimer = setTimeout(() => { live.textContent = text; }, 150);
 }
 
 const skeleton = () => `
@@ -106,10 +116,10 @@ function errorHtml(guide) {
     </div>`;
 }
 
+// 보이는 안내만 맡는다(낭독기 알림은 announce).
 function notice(text) {
   const p = document.createElement('p');
   p.className = 'notice';
-  p.setAttribute('role', 'status');
   p.textContent = text;
   return p;
 }

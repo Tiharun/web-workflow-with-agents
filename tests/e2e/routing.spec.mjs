@@ -36,7 +36,10 @@ const stageState = (page) => page.evaluate(() => ({
   role: document.querySelector('.notice')?.getAttribute('role'),
   focus: document.activeElement === document.querySelector('#doc h1'),
 }));
-const missingExpected = { y: 0, notices: [ui.stageMissing], first: 'notice', role: 'status', focus: true };
+// 안내 문단은 보이는 글만 맡는다. 화면 낭독기 알림은 처음부터 있던 #live에 나중에 글을 넣어서 한다
+// (글이 든 role="status"를 새로 끼워 넣으면 낭독기가 놓치기 쉽다).
+const missingExpected = { y: 0, notices: [ui.stageMissing], first: 'notice', role: null, focus: true };
+const liveText = (page) => page.evaluate(() => document.getElementById('live').textContent);
 
 test('missing stage on first load shows guide top, notice and focus on title', async ({ page }) => {
   await openPage(page, '/#/final/없는단계');
@@ -55,9 +58,20 @@ test('repeated missing stages keep one notice; guide root clears it', async ({ p
   await openPage(page, '/#/final/0단계-준비');
   await page.evaluate(() => { location.hash = '#/final/없는단계'; });
   await page.evaluate(() => { location.hash = '#/final/또없음'; });
+  // 두 번째 hashchange 처리가 끝난 뒤 센다(바로 세면 첫 안내만 보고 통과한다).
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await expect(page.locator('.notice')).toHaveCount(1);
   await page.evaluate(() => { location.hash = '#/final'; });
   await expect(page.locator('.notice')).toHaveCount(0);
+});
+
+test('missing stage is announced through the page live region and cleared at the guide root', async ({ page }) => {
+  await openPage(page, '/#/final/없는단계');
+  await expect.poll(() => liveText(page)).toBe(ui.stageMissing);
+  await page.evaluate(() => { location.hash = '#/final'; });
+  await expect.poll(() => liveText(page)).toBe('');
+  await page.evaluate(() => { location.hash = '#/final/또없음'; });
+  await expect.poll(() => liveText(page)).toBe(ui.stageMissing);
 });
 
 const finalFile = guides.find((g) => g.id === 'final').file;
@@ -91,6 +105,19 @@ test('changing stage while the error is shown retries instead of a notice', asyn
   await expect(page.locator('[id="0단계-준비"]')).toBeInViewport();
   await expect(page.locator('.notice')).toHaveCount(0);
   await expect(page.getByRole('alert')).toHaveCount(0);
+});
+
+// 다시 시도 버튼은 다시 그릴 때 사라진다. 초점이 body로 떨어지지 않고 결과 화면의 제목으로 와야 한다.
+test('retry moves keyboard focus to the title of the result', async ({ page }) => {
+  const ctl = await blockFinal(page);
+  await page.goto('/#/final');
+  const retry = () => page.getByRole('alert').getByRole('button', { name: ui.retry }).press('Enter');
+  await retry();
+  await expect.poll(() => page.evaluate(() => document.activeElement?.matches('[role="alert"] h1'))).toBe(true);
+  ctl.blocked = false;
+  await retry();
+  await expect(page.locator('#doc h1')).toHaveText(finalH1);
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.querySelector('#doc h1'))).toBe(true);
 });
 
 test('leaving a retried guide stops progress tracking', async ({ page }) => {

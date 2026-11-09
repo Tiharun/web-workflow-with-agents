@@ -44,7 +44,7 @@ test.describe('deep 404 without JavaScript', () => {
     await expect(page.locator('main .state__links a')).toHaveJSProperty('href', siteConfig.site.url);
   });
 });
-test('local 404 home link follows the base address when JS is on', async ({ page }) => {
+test('local 404 home link follows the base address when JS is on', async ({ page, baseURL }) => {
   await openPage(page, '/404.html');
-  await expect(page.locator('main [data-home]')).toHaveJSProperty('href', 'http://127.0.0.1:8123/');
+  await expect(page.locator('main [data-home]')).toHaveJSProperty('href', new URL('/', baseURL).href);
 });

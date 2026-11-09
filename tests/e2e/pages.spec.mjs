@@ -68,7 +68,8 @@ test.describe('scroll kind with motion allowed', () => {
     await record(page);
     await page.locator('footer.site-footer').getByRole('link', { name: '최종 워크플로우' }).click();
     await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
-    await page.waitForTimeout(600);
+    // 맨 위에 닿은 뒤 남은 스크롤 이벤트가 들어오도록 두 프레임을 더 본다(고정 대기 없이).
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
     expect(await page.evaluate(() => window.__ys.filter((y) => y !== 0))).toEqual([]);
   });
   test('toc link scrolls smoothly (control: the recorder can see smooth scrolling)', async ({ page }) => {
@@ -89,6 +90,12 @@ for (const p of pages) {
     await expect(h.locator('.mode-toggle')).toBeVisible();
   });
 }
+test('skip link moves focus to the page title', async ({ page }) => {
+  await openPage(page, '/#/final');
+  await page.locator('.skip-link').focus();
+  await page.keyboard.press('Enter');
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.querySelector('#doc h1'))).toBe(true);
+});
 // 현재 가이드 밑줄(DESIGN.md: 아래 2px 코발트 선). 위 모서리가 둥근 버튼에 inset 그림자로 그리면
 // 둥근 옆면을 따라 그림자 조각이 비친다. 그래서 버튼 폭 전체의 2px 선으로 그리고 그림자는 쓰지 않는다.
 test('current guide underline is a full-width 2px line without edge slivers', async ({ page }) => {

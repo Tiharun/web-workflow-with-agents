@@ -6,6 +6,7 @@ import { initFooter } from './footer.js';
 import { initTooltips } from './tooltip.js';
 import { renderHome } from './home.js';
 import { renderGuide, scrollToStage } from './guide.js';
+import { focusEl } from './scroll.js';
 import { loadGuide } from './md.js';
 import { icon } from './icons.js';
 
@@ -20,7 +21,8 @@ initHeader(document.getElementById('site-header'));
 initFooter(document.getElementById('site-footer'));
 initTooltips();
 
-// focusTop: 사용자가 누른 이동이면 맨 위로 갈 때 초점을 제목으로 옮긴다(첫 실행·hashchange는 넘기지 않는다).
+// focusTop: 화면을 새로 그릴 때, 사용자가 누른 이동(같은 주소 다시 누름·다시 시도)이면 초점을 제목으로 옮긴다.
+// 첫 실행·hashchange는 넘기지 않는다. 같은 가이드 안 이동은 단계로 갈 때처럼 늘 제목에 초점을 둔다.
 async function route({ focusTop = false } = {}) {
   const next = parse(location.hash);
   const smooth = smoothNext;
@@ -41,23 +43,16 @@ async function route({ focusTop = false } = {}) {
   if (next.name === 'home') {
     cleanup = renderHome(main);
     scrollTo({ top: 0, behavior: 'instant' });
-    if (focusTop) focusHeading();
+    if (focusTop) focusEl(main.querySelector('h1'));
   } else if (next.name === 'guide') {
-    const done = await renderGuide(main, next.guide, next.stageId, { smooth, onRetry: route });
+    const done = await renderGuide(main, next.guide, next.stageId, { smooth, focusTop, onRetry: () => route({ focusTop: true }) });
     if (view.guideId === next.guide.id) cleanup = done;
     else done();
   } else {
     renderNotFound();
     scrollTo({ top: 0, behavior: 'instant' });
-    if (focusTop) focusHeading();
+    if (focusTop) focusEl(main.querySelector('h1'));
   }
-}
-
-function focusHeading() {
-  const h1 = main.querySelector('h1');
-  if (!h1) return;
-  if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
-  h1.focus({ preventScroll: true });
 }
 
 function renderNotFound() {
@@ -85,9 +80,7 @@ document.addEventListener('click', (e) => {
 // 본문 바로가기: 해시를 쓰지 않고 초점만 옮긴다(해시는 라우터 몫).
 document.querySelector('.skip-link').addEventListener('click', (e) => {
   e.preventDefault();
-  const target = main.querySelector('h1') ?? main;
-  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-  target.focus();
+  focusEl(main.querySelector('h1') ?? main, { preventScroll: false });
 });
 
 // 프롬프트 카드 복사
