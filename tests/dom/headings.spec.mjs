@@ -35,3 +35,13 @@ test('stages follow the guide stageRule', async ({ page }) => {
 test('title falls back to menuLabel without h1', async ({ page }) => {
   expect((await render(page, '## 장\n', 'design')).title).toBe('디자인 스킬 워크플로우');
 });
+
+test('stageRule picks level-2 stages and expands only listed chapters', async ({ page }) => {
+  const md = '# T\n\n## 1. 개요\n\n### 가\n\n## 3. 단계별 진행과 프롬프트\n\n### 0단계\n\n### 1단계\n\n#### 세부\n';
+  const { stages } = await render(page, md, 'final');
+  expect(stages.map((s) => s.id)).toEqual(['1-개요', '3-단계별-진행과-프롬프트']);
+  expect(stages[0].children).toEqual([]);
+  expect(stages[1].children.map((c) => c.id)).toEqual(['0단계', '1단계']);
+  expect((await render(page, md, 'steps')).stages.every((s) => s.children.length === 0)).toBe(true);
+  expect((await render(page, '# T\n\n### 가\n', 'steps')).stages).toEqual([]);
+});

@@ -19,6 +19,11 @@
 /* ---------- base adjustments ---------- */
 :root { --anchor-offset: calc(var(--header-h) + 20px); }
 html { scroll-padding-top: var(--anchor-offset); }
+/* 메뉴가 열린 동안은 0: 헤더에 붙은 메뉴 안에서 초점이 움직여도 '가려졌다'고 보고 페이지를 굴리지 않게. */
+html.is-nav-open { scroll-padding-top: 0; }
+/* 붙어 있는 막대의 조작 요소: 루트 scroll-padding 안에 있어 초점을 받으면 Chrome·Safari가 '가려졌다'고 보고 페이지를 굴린다.
+   스냅 영역을 앵커 여백만큼 아래로 옮겨(위 음수·아래 양수) 늘 보이는 것으로 친다. 메뉴 본문(스크롤 영역)은 빼야 그 안 스크롤이 맞다. DESIGN.md '앵커 여백'. */
+.site-header .brand, .guide-nav__btn, .site-header__tools :is(a, button), .guide-tools :is(a, button) { scroll-margin-block: calc(-1 * var(--anchor-offset)) var(--anchor-offset); }
 body { font-size: var(--text-md); line-height: var(--leading-body); word-break: keep-all; overflow-wrap: break-word; min-height: 100dvh; display: flex; flex-direction: column; }
 h1, h2, h3, h4 { line-height: var(--leading-head); }
 h1 { max-width: 18em; } h2 { max-width: 26em; } h3 { max-width: 34em; }
@@ -89,6 +94,14 @@ button { cursor: pointer; color: inherit; }
 .mega__stage { display: flex; align-items: flex-start; min-height: 100%; padding: var(--space-sm) var(--space-md); border: var(--rule-hair) solid var(--color-rule-2); border-radius: var(--cut-l) 4px; background: var(--color-paper); color: var(--color-ink); font-size: var(--text-sm); line-height: 1.4; text-decoration: none; transition: border-color var(--dur-micro) var(--ease-out), background-color var(--dur-micro) var(--ease-out); }
 .mega__stage:hover { border-color: var(--color-accent); background: var(--color-accent-wash); color: var(--color-ink); }
 :is(.mega__link, .mega__stage, .mega__top):focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; }
+/* 48~80rem: 세 열이면 단계 열이 너무 좁다. 머리 열을 위 한 줄로 올리고 아래를 두 열로. DESIGN.md '메가메뉴'. */
+@media (min-width: 48rem) and (max-width: 79.99rem) {
+  .mega__inner { grid-template-columns: minmax(0, 16rem) minmax(0, 1fr); row-gap: var(--space-lg); }
+  .mega__col--head { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: var(--space-lg); }
+  .mega__col--head .mega__title { margin: 0; }
+  .mega__col--chapters.is-wide { grid-column: 1 / -1; }
+  .mega__col--chapters.is-wide .mega__chapters, .mega__stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .menu-skeleton { display: grid; gap: var(--space-xs); grid-column: 1 / -1; }
 .menu-skeleton span { display: block; height: 14px; border-radius: 4px; background: var(--color-paper-3); animation: pulse 1.4s var(--ease-in-out) infinite; }
 .menu-skeleton span:nth-child(1) { width: 40%; } .menu-skeleton span:nth-child(2) { width: 70%; } .menu-skeleton span:nth-child(3) { width: 55%; }
@@ -159,7 +172,6 @@ button { cursor: pointer; color: inherit; }
 /* document flow */
 .doc > * { margin-block: 0; }
 .doc > * + * { margin-top: var(--space-md); }
-.doc :is(h1, h2, h3, h4) { scroll-margin-top: var(--anchor-offset); }
 .doc :is(h1, h2, h3, h4):focus { outline: none; }
 .doc h1 { font-size: var(--text-display); }
 .doc h2 { max-width: none; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule-2); font-size: var(--text-section); }

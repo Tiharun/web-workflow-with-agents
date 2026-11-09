@@ -37,3 +37,9 @@ export async function serveAsPages(page) {
     return route.fulfill({ status: 404, body: readFileSync(join(root, '404.html')), contentType: 'text/html' });
   });
 }
+
+/** requestAnimationFrame 두 번: 스크롤 뒤 rAF로 미룬 갱신이 끝날 때까지 기다린다. */
+export const twoFrames = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+
+/** 목차 링크의 제목 id(문서 순서). 한글 id를 하드코딩하지 않고 화면에서 읽는다. */
+export const tocIds = (page) => page.locator('#toc a[data-toc-id]').evaluateAll((as) => as.map((a) => a.dataset.tocId));

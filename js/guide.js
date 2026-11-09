@@ -166,7 +166,10 @@ function buildToc(main, guide, doc) {
     current?.focus();
   };
   // 닫을 때도 왼쪽으로 밀려 들어간 뒤 닫는다. 동작 줄이기면 바로 닫는다.
+  // 목차 항목으로 닫으면 그 제목 id를 기억해 둔다: 닫히는 동안은 모달이라 본문에 초점을 줄 수 없고,
+  // dialog.close()는 초점을 [목차] 버튼으로 되돌린다. 그래서 close 이벤트(초점 복귀 뒤)에서 제목으로 옮긴다.
   let timer = 0;
+  let chosenId = null;
   const close = () => {
     if (!dialog.open || dialog.classList.contains('is-closing')) return;
     if (!motionOK()) { dialog.close(); return; }
@@ -176,6 +179,8 @@ function buildToc(main, guide, doc) {
   openBtn.addEventListener('click', open);
   dialog.querySelector('[data-toc-close]').addEventListener('click', close);
   dialog.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-toc-id]');
+    if (a) chosenId = a.dataset.tocId;
     if (e.target === dialog || e.target.closest('a')) close();
   });
   dialog.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
@@ -186,6 +191,8 @@ function buildToc(main, guide, doc) {
     clearTimeout(timer);
     dialog.classList.remove('is-closing');
     openBtn.setAttribute('aria-expanded', 'false');
+    if (chosenId) focusEl(main.querySelector('#doc').querySelector(`#${CSS.escape(chosenId)}`));
+    chosenId = null;
   });
 }
 
@@ -195,20 +202,30 @@ function trackScroll(main, article, doc) {
   const links = new Map([...main.querySelectorAll('[data-toc-id]')].map((a) => [a.dataset.tocId, a]));
   const heads = doc.headings.filter((h) => h.level > 1).map((h) => article.querySelector(`#${CSS.escape(h.id)}`)).filter(Boolean);
   let offsets = [];
+  let anchor = 0; // 제목이 멈추는 높이 = html scroll-padding-top의 계산값(px). 폭에 따라 바뀐다(84px ↔ 137px).
   let current = null;
   let frame = 0;
 
   const measure = () => {
     const y = scrollY;
     offsets = heads.map((el) => el.getBoundingClientRect().top + y);
+    // 메뉴가 열린 동안은 루트 scroll-padding이 0이다(site.css). 그때 잰 값은 쓰지 않는다.
+    if (!document.documentElement.classList.contains('is-nav-open')) anchor = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
   };
   const update = () => {
     frame = 0;
     const max = document.documentElement.scrollHeight - innerHeight;
     if (bar) bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
-    const line = scrollY + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anchor-offset') || '120') + 8;
+    const line = scrollY + anchor + 8;
     let idx = -1;
     for (let i = 0; i < offsets.length && offsets[i] <= line; i++) idx = i;
+    // 페이지 끝이면 마지막 제목: 끝의 짧은 절은 멈춤선까지 올라오지 못한다.
+    // 단, 이동해 초점을 받은 제목이 화면 안에 있으면 그 제목이다(고른 곳이 먼저).
+    if (max > 0 && scrollY >= max - 1) {
+      const chosen = heads.indexOf(document.activeElement);
+      const top = chosen > idx ? heads[chosen].getBoundingClientRect().top : -1;
+      idx = top >= 0 && top < innerHeight ? chosen : heads.length - 1;
+    }
     const id = idx >= 0 ? heads[idx].id : null;
     if (id !== current) {
       links.get(current)?.removeAttribute('aria-current');
@@ -220,10 +237,12 @@ function trackScroll(main, article, doc) {
   const ro = new ResizeObserver(() => { measure(); onScroll(); });
   ro.observe(article);
   addEventListener('scroll', onScroll, { passive: true });
+  article.addEventListener('focusin', onScroll); // 굴림 없이 제목에 초점만 옮겨도(이미 끝에 있을 때) 다시 계산
   measure();
   update();
   return () => {
     removeEventListener('scroll', onScroll);
+    article.removeEventListener('focusin', onScroll);
     ro.disconnect();
     cancelAnimationFrame(frame);
     if (bar) bar.style.transform = 'scaleX(0)';
