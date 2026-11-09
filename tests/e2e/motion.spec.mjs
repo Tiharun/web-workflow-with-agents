@@ -2,10 +2,11 @@
 import { test, expect } from '@playwright/test';
 import { openPage, twoFrames, tocIds } from './helpers.mjs';
 
-// 화면 안(아래 10%는 아직 트리거 전이라 뺀다)에서 불투명하지 않은 블록 수
+// 화면 안(아래 10%는 아직 트리거 전이라 뺀다)에서 아직 읽기 어려운(불투명도 0.9 미만) 블록 수.
+// 모션 끝(정확히 1)까지 기다리면 부하에 따라 흔들리므로 읽을 수 있는 시점으로 잰다.
 const hiddenInView = (page) => page.locator('#doc > *').evaluateAll((els) => els.filter((e) => {
   const r = e.getBoundingClientRect();
-  return r.bottom > 0 && r.top < innerHeight * 0.9 && getComputedStyle(e).opacity !== '1';
+  return r.bottom > 0 && r.top < innerHeight * 0.9 && +getComputedStyle(e).opacity < 0.9;
 }).length);
 const styled = (page, sel) => page.locator(sel).evaluateAll((els) => els.filter((e) => /opacity|transform|translate/.test(e.getAttribute('style') ?? '') || getComputedStyle(e).opacity !== '1').length);
 
@@ -51,6 +52,53 @@ test.describe('motion allowed', () => {
   test('an instant scroll to the middle shows the blocks there within 2s', async ({ page }) => {
     await openPage(page, '/#/final');
     await page.evaluate(() => scrollTo({ top: document.documentElement.scrollHeight / 2, behavior: 'instant' }));
+    await expect.poll(() => hiddenInView(page), { timeout: 2000 }).toBe(0);
+  });
+
+  test('a big batch starts within 0.3s of its first block (total stagger is capped)', async ({ page }) => {
+    await openPage(page, '/#/design');
+    // 블록마다 처음 보이기 시작한 시각을 재서, 첫 블록과 마지막 블록의 간격을 본다(부하로 전체가 밀려도 간격은 그대로).
+    const starts = await page.evaluate(async () => {
+      scrollTo({ top: document.documentElement.scrollHeight / 2, behavior: 'instant' });
+      const seen = new Map();
+      const t0 = performance.now();
+      while (performance.now() - t0 < 1800) {
+        await new Promise((ok) => requestAnimationFrame(ok));
+        for (const e of document.querySelectorAll('#doc > *')) {
+          const r = e.getBoundingClientRect();
+          if (r.bottom > 0 && r.top < innerHeight * 0.9 && !seen.has(e) && +getComputedStyle(e).opacity > 0.05) seen.set(e, performance.now());
+        }
+      }
+      return [...seen.values()];
+    });
+    expect(starts.length).toBeGreaterThan(5); // 큰 묶음이어야 의미가 있다
+    expect(Math.max(...starts) - Math.min(...starts)).toBeLessThan(300);
+  });
+
+  // 스크롤이 멈출 때까지 기다린다(부드러운 스크롤 끝).
+  const scrollSettled = (page) => page.evaluate(async () => {
+    let last = -1, still = 0;
+    while (still < 6) { await new Promise((ok) => requestAnimationFrame(ok)); still = scrollY === last ? still + 1 : 0; last = scrollY; }
+  });
+
+  test('a smooth toc jump to the last stage is readable within 1s of the scroll ending', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await page.locator('[data-toc-open]').click();
+    await page.locator('.toc__nav a:visible').last().click();
+    await page.waitForTimeout(300); // 대화상자가 닫히고 스크롤이 시작되기를 기다린다
+    await scrollSettled(page);
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(5000); // 실제로 멀리 이동했다
+    await expect.poll(() => hiddenInView(page), { timeout: 1000 }).toBe(0);
+  });
+
+  test('find-in-page (Ctrl+F) to text in a block not yet revealed shows it within 2s', async ({ page }) => {
+    await openPage(page, '/#/final');
+    const word = await page.locator('#doc > p').evaluateAll((ps) => {
+      const p = ps[Math.floor(ps.length * 0.7)];
+      return p.textContent.trim().slice(0, 12);
+    });
+    expect(await page.evaluate((w) => window.find(w), word)).toBe(true); // 브라우저 찾기와 같은 즉시 스크롤
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(2000);
     await expect.poll(() => hiddenInView(page), { timeout: 2000 }).toBe(0);
   });
 

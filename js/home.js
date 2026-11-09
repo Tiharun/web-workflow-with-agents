@@ -36,8 +36,10 @@ export function renderHome(main) {
     </div>`;
 
   const slot = main.querySelector('[data-hero-visual]');
-  if (cached) showRuler(slot, cached);
-  else loadGuide(rulerGuide).then((doc) => showRuler(slot, doc)).catch(() => { slot.hidden = true; });
+  // 그리다 실패하면 칸만 숨긴다(캐시 경로도 같은 처리, 화면 전환은 계속된다).
+  const show = (doc) => { try { showRuler(slot, doc); } catch { slot.hidden = true; } };
+  if (cached) show(cached);
+  else loadGuide(rulerGuide).then(show, () => { slot.hidden = true; });
 
   return reveal(main.querySelector('.home'), '.hero__visual, .entry__grid > li');
 }

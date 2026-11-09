@@ -1,5 +1,6 @@
 // 툴팁: 포인터·포커스·탭으로 열고 Esc로 닫는다. 툴팁 위로 포인터를 옮겨도 유지한다(WCAG 1.4.13).
-// 스크롤: 초점을 가진 주인이 화면 안이면 툴팁이 따라가고, 포인터로 연 툴팁은 닫는다.
+// 스크롤: 키보드 초점(:focus-visible)을 가진 주인이면 툴팁이 따라가고, 화면 밖이면 잠시 감췄다가 돌아오면 다시 보인다.
+// 포인터·탭으로 연 툴팁은 스크롤하면 닫는다.
 let tip;
 let owner = null;
 let hideTimer = 0;
@@ -35,12 +36,17 @@ export function initTooltips() {
     if (el) { owner === el && !tip.hidden ? hide() : show(el); return; }
     if (!tip.contains(e.target)) hide();
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !tip.hidden) { e.stopPropagation(); hide(); } }, true);
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Escape' || !owner) return;
+    if (!tip.hidden) e.stopPropagation(); // 잠시 감춘 상태면 Esc를 다른 곳(대화상자 등)에 넘긴다
+    hide();
+  }, true);
   addEventListener('scroll', () => {
-    if (tip.hidden) return;
-    const r = owner === document.activeElement && owner.getBoundingClientRect();
-    if (r && r.bottom > 0 && r.top < innerHeight) place(owner);
-    else hide();
+    if (!owner) return;
+    if (owner !== document.activeElement || !owner.matches(':focus-visible')) { hide(); return; }
+    const r = owner.getBoundingClientRect();
+    tip.hidden = !(r.bottom > 0 && r.top < innerHeight);
+    if (!tip.hidden) place(owner);
   }, { passive: true });
   addEventListener('resize', hide);
 }
@@ -73,7 +79,7 @@ function scheduleHide() {
 
 function hide() {
   clearTimeout(hideTimer);
-  if (!tip || tip.hidden) return;
+  if (!tip || !owner) return; // 잠시 감춘 툴팁도 주인을 놓아야 하므로 hidden이 아니라 owner로 본다
   tip.hidden = true;
   owner?.removeAttribute('aria-describedby');
   owner = null;

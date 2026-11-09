@@ -34,7 +34,8 @@ export function reveal(root, selector = ':scope > *') {
         gsap.set(batch.filter((el) => !seen.includes(el)), { clearProps: CLEAR });
         if (seen.length) {
           gsap.to(seen, {
-            opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: 0.08, overwrite: true, clearProps: CLEAR,
+            // 차례 간격은 0.08초, 묶음 전체는 0.24초를 넘지 않는다(큰 묶음에서 마지막 블록이 오래 숨지 않게).
+            opacity: 1, y: 0, duration: 0.9, ease: 'expo.out', stagger: Math.min(0.08, 0.24 / (seen.length - 1 || 1)), overwrite: true, clearProps: CLEAR,
           });
         }
       },

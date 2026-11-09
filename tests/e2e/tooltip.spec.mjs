@@ -88,6 +88,24 @@ test('tabbing to a term below the fold keeps its tooltip next to it', async ({ p
   expect(await near()).toBeLessThan(2);
 });
 
+test('a focused term scrolled out of view and back shows its tooltip again', async ({ page }) => {
+  await openPage(page, '/#/final');
+  const term = page.locator('.term').filter({ visible: true }).first();
+  await page.keyboard.press('Tab');
+  await term.focus();
+  await expect(tip(page)).toBeVisible();
+  await page.mouse.move(640, 400);
+  await page.mouse.wheel(0, 1600);
+  await expect(tip(page)).toBeHidden(); // 주인이 화면 밖이면 감춘다
+  await page.mouse.wheel(0, -1600);
+  await expect(term).toBeFocused();
+  await expect(tip(page)).toBeVisible(); // 돌아오면 다시 보인다(초점이 머무는 동안 유지, WCAG 1.4.13)
+  const [t, b] = [await term.boundingBox(), await tip(page).boundingBox()];
+  expect(Math.min(Math.abs(b.y - (t.y + t.height + 8)), Math.abs(b.y + b.height - (t.y - 8)))).toBeLessThan(2);
+  await page.keyboard.press('Escape');
+  await expect(tip(page)).toBeHidden();
+});
+
 test.describe('touch 375px', () => {
   test.use({ hasTouch: true, isMobile: true, viewport: { width: 375, height: 812 } });
 
@@ -109,5 +127,15 @@ test.describe('touch 375px', () => {
     expect(await page.evaluate(() => scrollY)).toBe(y0);
     await expect(tip(page)).toBeHidden();
     await expect(term).not.toHaveAttribute('aria-describedby');
+  });
+
+  test('a tooltip opened by a tap closes on scroll (taps give focus but not focus-visible)', async ({ page }) => {
+    await openPage(page, '/#/final');
+    const term = page.locator('.term').first();
+    await term.scrollIntoViewIfNeeded();
+    await term.tap();
+    await expect(tip(page)).toBeVisible();
+    await page.evaluate(() => scrollBy(0, 40));
+    await expect(tip(page)).toBeHidden();
   });
 });

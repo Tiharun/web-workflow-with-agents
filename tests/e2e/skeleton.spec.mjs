@@ -52,3 +52,21 @@ test('opening a menu whose md is loaded never inserts the menu skeleton', async 
   await expect(page.locator('#mega-final a').first()).toBeVisible();
   expect(await inserted(page)).toEqual([]);
 });
+
+test('a failure while drawing the cached ruler hides its slot instead of breaking the route', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  // 단계 자를 칸에 넣는 순간 실패하게 만든다(캐시 경로든 아니든 같은 지점).
+  await page.addInitScript(() => {
+    const orig = Element.prototype.replaceChildren;
+    Element.prototype.replaceChildren = function (...a) {
+      if (this.matches?.('[data-hero-visual]')) throw new Error('ruler failed');
+      return orig.apply(this, a);
+    };
+  });
+  await openPage(page, '/#/final');
+  await go(page, '#/');
+  await expect(page.locator('.hero__visual')).toBeHidden();
+  await expect(page.locator('.entry__grid > li')).toHaveCount(3); // 나머지 홈은 그대로
+  expect(errors).toEqual([]);
+});
