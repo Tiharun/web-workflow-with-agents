@@ -31,7 +31,7 @@
 ## 규칙
 1. 색·글꼴은 DESIGN.md와 `css/tokens.css`의 토큰만 쓴다. 토큰 블록 밖에 색 값·`font-family`를 직접 쓰지 않는다. 새 값이 필요하면 DESIGN.md부터 고친다
 2. 사이트 이름·URL·저장소 주소는 `js/site-config.js` 한 곳에서만 관리하고 다른 곳에 하드코딩하지 않는다
-3. 공용 컴포넌트를 재사용한다: 버튼 `.btn`/`.tool-btn`/`.icon-btn`, 카드 `.card`, 아이콘 `js/icons.js`, 툴팁 `js/tooltip.js`, md 변환 `js/md.js`, 모션 `js/motion.js`. 같은 역할을 새로 만들지 않는다
+3. 공용 컴포넌트를 재사용한다: 버튼 `.btn`/`.tool-btn`/`.icon-btn`, 카드 `.card`, 아이콘 `js/icons.js`, 툴팁 `js/tooltip.js`, md 변환 `js/md.js`, 모션 `js/motion.js`, 비주얼 `js/visuals.js`. 같은 역할을 새로 만들지 않는다
 4. md 원문 문장은 바꾸지 않는다. 모양만 재구성한다(`docs/brief.md`)
 5. 모션은 `transform`·`opacity`만, `prefers-reduced-motion`이면 즉시 표시, 스크립트가 꺼져도 글이 보여야 한다
 6. 완료 보고 전에 위 검사 출력과 스크린샷(1440·768·375px, 라이트·다크)을 제시한다. 직접 확인하지 못한 항목은 "확인 못 함"으로 적는다

@@ -1,7 +1,7 @@
 // 가이드 화면: md 본문, 좌측 상단 도구([→ 목차] [⬇ md]), 목차 드로어, 진행 막대, 현재 위치, 등장 모션.
-import { siteConfig, guideById } from './site-config.js';
+import { siteConfig } from './site-config.js';
 import { loadGuide, readyDoc } from './md.js';
-import { buildRuler } from './ruler.js';
+import { placeVisuals } from './visuals.js';
 import { icon } from './icons.js';
 import { escapeHtml } from './header.js';
 import { motionOK, scrollToTarget, focusEl } from './scroll.js';
@@ -126,27 +126,6 @@ function notice(text) {
   p.className = 'notice';
   p.textContent = text;
   return p;
-}
-
-/** siteConfig.visuals: 정해진 제목 바로 뒤에 비주얼. 제목이 없으면 그 비주얼만 건너뛴다. */
-function placeVisuals(article, guide, doc) {
-  siteConfig.visuals
-    .filter((v) => v.guideId === guide.id && v.type === 'stage-ruler')
-    .forEach((v) => {
-      const heading = article.querySelector(`#${CSS.escape(v.headingId)}`);
-      if (!heading) return;
-      const insert = (source) => {
-        const ruler = source && buildRuler(source);
-        if (!ruler) return;
-        const fig = document.createElement('figure');
-        fig.className = 'visual';
-        fig.append(ruler);
-        heading.after(fig);
-      };
-      // 같은 문서면 바로 넣어 스크롤 위치가 밀리지 않게 한다.
-      if (siteConfig.ruler.guideId === guide.id) insert(doc);
-      else loadGuide(guideById(siteConfig.ruler.guideId)).then(insert, () => {});
-    });
 }
 
 function buildToc(main, guide, doc) {
