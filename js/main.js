@@ -98,12 +98,25 @@ document.addEventListener('click', async (e) => {
   const label = btn.querySelector('[data-copy-label]');
   btn.classList.toggle('is-done', ok);
   label.textContent = ok ? ui.copied : ui.copyFailed;
-  live.textContent = label.textContent;
+  announceCopy(label.textContent);
   clearTimeout(btn._t);
-  btn._t = setTimeout(() => { label.textContent = ui.copy; btn.classList.remove('is-done'); live.textContent = ''; }, 1800);
+  btn._t = setTimeout(() => { label.textContent = ui.copy; btn.classList.remove('is-done'); }, 1800);
 });
 
+// 같은 글이 다시 와도 읽히도록 먼저 비우고 조금 뒤에 넣는다. 지울 때는 자기 알림일 때만 지운다(다른 알림은 두기).
+let copyShow, copyClear;
+function announceCopy(text) {
+  clearTimeout(copyShow);
+  clearTimeout(copyClear);
+  live.textContent = '';
+  copyShow = setTimeout(() => {
+    live.textContent = text;
+    copyClear = setTimeout(() => { if (live.textContent === text) live.textContent = ''; }, 1800);
+  }, 100);
+}
+
 function fallbackCopy(text) {
+  const prev = document.activeElement;
   const area = document.createElement('textarea');
   area.value = text;
   area.setAttribute('readonly', '');
@@ -113,6 +126,7 @@ function fallbackCopy(text) {
   let ok = false;
   try { ok = document.execCommand('copy'); } catch { ok = false; }
   area.remove();
+  prev?.focus?.({ preventScroll: true });
   return ok;
 }
 

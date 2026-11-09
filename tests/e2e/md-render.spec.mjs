@@ -4,6 +4,7 @@ import { pages, openPage } from './helpers.mjs';
 import { readFileSync } from 'node:fs';
 import { siteConfig } from '../../js/site-config.js';
 import { marked } from '../../vendor/marked/marked.esm.js';
+import { rewriteHref } from '../../js/md.js';
 
 const { ui } = siteConfig;
 const tokens = (file, type) => {
@@ -62,8 +63,55 @@ for (const [name, execResult, label] of [['copy falls back to execCommand', true
     await btn.click();
     await expect(btn).toHaveText(label);
     await expect(page.locator('#live')).toHaveText(label);
+    // 숨긴 textarea로 옮겨 갔던 초점이 버튼으로 돌아와야 한다(키보드·낭독기 위치 유지).
+    await expect(btn).toBeFocused();
   });
 }
+
+test.describe('copy announcements', () => {
+  test.use({ permissions: ['clipboard-read', 'clipboard-write'] });
+
+  test('copying again soon is announced again', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await page.evaluate(() => {
+      const live = document.getElementById('live');
+      window.__live = [];
+      new MutationObserver(() => window.__live.push(live.textContent)).observe(live, { childList: true, characterData: true, subtree: true });
+    });
+    const btns = page.locator('#doc .prompt button[data-copy]');
+    await btns.nth(0).click();
+    await expect(page.locator('#live')).toHaveText(ui.copied);
+    const from = await page.evaluate(() => window.__live.length);
+    await btns.nth(1).click();
+    await expect(btns.nth(1)).toHaveText(ui.copied);
+    // 같은 글을 다시 넣기 전에 한 번 비워야 낭독기가 다시 읽는다.
+    await expect.poll(() => page.evaluate((n) => window.__live.slice(n), from)).toEqual(['', ui.copied]);
+  });
+
+  test('the copy timer leaves other announcements alone', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await page.locator('#doc .prompt button[data-copy]').first().click();
+    await expect(page.locator('#live')).toHaveText(ui.copied);
+    await page.evaluate(() => { document.getElementById('live').textContent = 'other'; });
+    await page.waitForTimeout(2200);
+    await expect(page.locator('#live')).toHaveText('other');
+  });
+});
+
+test('md link with a heading fragment opens that heading in the other guide', async ({ page }) => {
+  await openPage(page, '/#/steps');
+  const id = await page.locator('#doc h2').nth(2).getAttribute('id');
+  const { href } = rewriteHref(`웹사이트 제작 순서.md#${encodeURIComponent(id)}`, siteConfig.guides.find((g) => g.id === 'final'));
+  await openPage(page, '/#/final');
+  await page.evaluate((h) => {
+    const a = Object.assign(document.createElement('a'), { href: h, textContent: 'to steps', id: 'probe-link' });
+    document.querySelector('#doc p').prepend(a);
+  }, href);
+  await page.locator('#probe-link').focus();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(new RegExp(`#/steps/${encodeURIComponent(id)}$`));
+  await expect.poll(() => page.evaluate((i) => document.activeElement?.id === i, id)).toBe(true);
+});
 
 test('final guide shows every block kind', async ({ page }) => {
   await openPage(page, '/#/final');

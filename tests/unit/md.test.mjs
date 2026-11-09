@@ -30,3 +30,11 @@ test('fragment-only links stay in the current guide', () => {
 test('other links are left alone', () => {
   for (const h of ['mailto:a@b.c', 'GLOSSARY.md', '%E0%A4%A.md']) assert.deepEqual(r(h), { href: h, external: false });
 });
+
+test('odd links: bare hash, site hashes and queries', () => {
+  assert.equal(r('#').href, '#/final');
+  assert.equal(r('#/steps').href, '#/steps');
+  assert.equal(r('#/steps/a').href, '#/steps/a');
+  assert.equal(r('웹사이트 제작 순서.md?x=1#y').href, '#/steps/y');
+  assert.equal(r('웹사이트 제작 순서.md?x=1').href, '#/steps');
+});

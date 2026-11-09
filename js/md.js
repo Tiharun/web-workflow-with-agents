@@ -147,10 +147,11 @@ const decode = (s) => {
  */
 export function rewriteHref(href, guide) {
   if (/^https?:\/\//i.test(href)) return { href, external: true };
+  if (href.startsWith('#/')) return { href, external: false }; // 이미 사이트 주소
   const hash = href.indexOf('#');
-  const path = hash < 0 ? href : href.slice(0, hash);
+  const path = (hash < 0 ? href : href.slice(0, hash)).replace(/\?.*$/, '');
   const fragment = hash < 0 ? '' : decode(href.slice(hash + 1));
-  if (!path) return { href: fragment ? `#/${guide.id}/${fragment}` : href, external: false };
+  if (!path && hash === 0) return { href: fragment ? `#/${guide.id}/${fragment}` : `#/${guide.id}`, external: false };
   const name = decode(path).split(/[\\/]/).pop();
   const target = siteConfig.guides.find((g) => g.legacyNames.includes(name));
   if (!target) return { href, external: false };
