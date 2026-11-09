@@ -1,5 +1,6 @@
 // 앱 시작: 헤더, 해시 라우터(#/, #/<가이드>, #/<가이드>/<제목 id>, 그 밖은 찾을 수 없음), 복사 버튼.
-import { siteConfig, guideById } from './site-config.js';
+import { siteConfig } from './site-config.js';
+import { parse } from './router.js';
 import { initHeader, setCurrentGuide, closeMenus } from './header.js';
 import { initFooter } from './footer.js';
 import { initTooltips } from './tooltip.js';
@@ -18,17 +19,6 @@ document.title = site.name;
 initHeader(document.getElementById('site-header'));
 initFooter(document.getElementById('site-footer'));
 initTooltips();
-
-/** '#/final/0단계-준비' → { name: 'guide', guide, stageId } */
-function parse(hash) {
-  let path = hash.replace(/^#\/?/, '');
-  try { path = decodeURIComponent(path); } catch { /* 깨진 주소는 그대로 판정 */ }
-  const [first = '', ...rest] = path.split('/').filter(Boolean);
-  if (!first) return { name: 'home' };
-  const guide = guideById(first);
-  if (!guide) return { name: 'notfound' };
-  return { name: 'guide', guide, stageId: rest.join('/') || null };
-}
 
 async function route() {
   const next = parse(location.hash);
