@@ -34,6 +34,20 @@ test.describe('motion allowed', () => {
     expect(await block.getAttribute('style') ?? '').not.toMatch(/opacity/);
   });
 
+  test('scrolling blocks into view leaves no console warnings', async ({ page }) => {
+    // 한 묶음이 모두 화면 안이면 '지나친 블록' 목록이 비어, 빈 목록을 gsap.set에 넘기면 'GSAP target  not found' 경고가 났다(M6 Lighthouse 측정)
+    const warns = [];
+    page.on('console', (m) => { if (m.type() === 'warning' || m.type() === 'error') warns.push(m.text()); });
+    await openPage(page, '/#/final');
+    // 읽듯이 조금씩 내리면 새로 들어온 블록이 모두 화면 안이다
+    for (let i = 0; i < 8; i++) {
+      await page.mouse.wheel(0, 300);
+      await page.waitForTimeout(150);
+    }
+    expect(await page.evaluate(() => scrollY)).toBeGreaterThan(1000);
+    expect(warns).toEqual([]);
+  });
+
   test('jumping to the last stage shows the blocks in view within 2s', async ({ page }) => {
     await openPage(page, '/#/final');
     const ids = await tocIds(page);

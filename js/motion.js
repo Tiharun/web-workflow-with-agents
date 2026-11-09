@@ -31,7 +31,8 @@ export function reveal(root, selector = ':scope > *') {
       // 멀리 이동하면 지나친 블록까지 한 묶음으로 온다. 그 블록들에 stagger가 쌓이면 화면 안 블록이 몇 초씩 늦으므로 바로 보인다.
       onEnter: (batch) => {
         const seen = batch.filter(inViewport);
-        gsap.set(batch.filter((el) => !seen.includes(el)), { clearProps: CLEAR });
+        const passed = batch.filter((el) => !seen.includes(el));
+        if (passed.length) gsap.set(passed, { clearProps: CLEAR }); // 빈 목록이면 GSAP이 'target not found' 경고를 낸다
         if (seen.length) {
           gsap.to(seen, {
             // 차례 간격은 0.08초, 묶음 전체는 0.24초를 넘지 않는다(큰 묶음에서 마지막 블록이 오래 숨지 않게).
