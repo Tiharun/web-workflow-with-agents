@@ -20,7 +20,8 @@ initHeader(document.getElementById('site-header'));
 initFooter(document.getElementById('site-footer'));
 initTooltips();
 
-async function route() {
+// focusTop: 사용자가 누른 이동이면 맨 위로 갈 때 초점을 제목으로 옮긴다(첫 실행·hashchange는 넘기지 않는다).
+async function route({ focusTop = false } = {}) {
   const next = parse(location.hash);
   const smooth = smoothNext;
   smoothNext = false;
@@ -28,7 +29,7 @@ async function route() {
   setCurrentGuide(next.guide?.id ?? null);
 
   if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('#doc[data-loaded]')) {
-    scrollToStage(main, next.stageId, smooth);
+    scrollToStage(main, next.stageId, smooth, { focusTop: true });
     return;
   }
 
@@ -40,6 +41,7 @@ async function route() {
   if (next.name === 'home') {
     cleanup = renderHome(main);
     scrollTo({ top: 0, behavior: 'instant' });
+    if (focusTop) focusHeading();
   } else if (next.name === 'guide') {
     const done = await renderGuide(main, next.guide, next.stageId, { smooth, onRetry: route });
     if (view.guideId === next.guide.id) cleanup = done;
@@ -47,7 +49,15 @@ async function route() {
   } else {
     renderNotFound();
     scrollTo({ top: 0, behavior: 'instant' });
+    if (focusTop) focusHeading();
   }
+}
+
+function focusHeading() {
+  const h1 = main.querySelector('h1');
+  if (!h1) return;
+  if (!h1.hasAttribute('tabindex')) h1.setAttribute('tabindex', '-1');
+  h1.focus({ preventScroll: true });
 }
 
 function renderNotFound() {
@@ -69,7 +79,7 @@ document.addEventListener('click', (e) => {
   if (a.hasAttribute('data-smooth')) smoothNext = true;
   // 같은 주소를 다시 누르면(예: 푸터의 현재 가이드 링크) hashchange가 없으므로 직접 이동한다.
   // a.hash·location.hash 모두 퍼센트 인코딩된 값이라 한글 단계 id도 그대로 비교된다.
-  if (a.hash === location.hash) { e.preventDefault(); route(); }
+  if (a.hash === location.hash) { e.preventDefault(); route({ focusTop: true }); }
 });
 
 // 본문 바로가기: 해시를 쓰지 않고 초점만 옮긴다(해시는 라우터 몫).

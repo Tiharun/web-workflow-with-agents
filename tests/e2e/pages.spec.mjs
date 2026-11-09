@@ -46,6 +46,38 @@ test('footer link to current guide returns to top', async ({ page }) => {
   await openPage(page, '/#/final');
   await page.locator('footer.site-footer').getByRole('link', { name: '최종 워크플로우' }).click();
   await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.querySelector('#doc h1'))).toBe(true);
+});
+
+test('footer brand on home returns to top and focuses the title', async ({ page }) => {
+  await openPage(page, '/#/');
+  await page.locator('footer.site-footer .brand').click();
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await expect.poll(() => page.evaluate(() => document.activeElement === document.querySelector('main h1'))).toBe(true);
+});
+
+test.describe('scroll kind with motion allowed', () => {
+  test.use({ reducedMotion: 'no-preference' });
+  // 스크롤 위치를 모두 기록한다. 즉시 이동이면 0 말고는 기록되지 않고, 부드러운 이동이면 중간값이 생긴다.
+  const record = (page) => page.evaluate(() => { window.__ys = []; addEventListener('scroll', () => window.__ys.push(Math.round(scrollY))); });
+  test('footer link to current guide jumps instantly', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+    // 맨 아래로 보낸 스크롤의 이벤트가 끝난 뒤 기록을 시작한다.
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    await record(page);
+    await page.locator('footer.site-footer').getByRole('link', { name: '최종 워크플로우' }).click();
+    await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+    await page.waitForTimeout(600);
+    expect(await page.evaluate(() => window.__ys.filter((y) => y !== 0))).toEqual([]);
+  });
+  test('toc link scrolls smoothly (control: the recorder can see smooth scrolling)', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await record(page);
+    await page.locator('[data-toc-open]').click();
+    await page.locator('#toc a[data-toc-id="0단계-준비"]').click();
+    await expect.poll(() => page.evaluate(() => window.__ys.length), { timeout: 3000 }).toBeGreaterThan(2);
+  });
 });
 
 for (const p of pages) {

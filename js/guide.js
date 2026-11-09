@@ -61,8 +61,9 @@ export async function renderGuide(main, guide, stageId, { smooth = false, onRetr
 /**
  * 단계로 이동한다. 처음 그릴 때와 같은 가이드 안에서 단계만 바뀔 때 모두 이 함수만 거친다.
  * 없는 단계면 안내를 본문 맨 앞에 하나만 두고, 즉시 맨 위로 가서 초점을 가이드 제목으로 옮긴다.
+ * focusTop: 맨 위로 갈 때도 초점을 가이드 제목으로 옮긴다(라우터가 사용자 이동에만 넘긴다. 첫 화면은 초점을 두지 않는다).
  */
-export function scrollToStage(main, stageId, smooth) {
+export function scrollToStage(main, stageId, smooth, { focusTop = false } = {}) {
   const article = main.querySelector('#doc');
   const target = stageId ? article?.querySelector(`#${CSS.escape(stageId)}`) : null;
   main.querySelector('.notice')?.remove();
@@ -74,6 +75,7 @@ export function scrollToStage(main, stageId, smooth) {
     focusTitle(article);
   } else {
     scrollTo({ top: 0, behavior: smooth && motionOK() ? 'smooth' : 'instant' });
+    if (focusTop) focusTitle(article);
   }
 }
 
