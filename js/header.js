@@ -57,11 +57,26 @@ export function initHeader(mount) {
 
   document.addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
-    const open = header.querySelector('.guide-nav__btn[aria-expanded="true"]');
-    if (open) { closeMenus(); open.focus(); }
-    else if (!header.querySelector('.mobile-nav').hidden) { closeMenus(); header.querySelector('.nav-toggle').focus(); }
+    const opener = openMenuButton();
+    if (opener) { closeMenus(); opener.focus(); }
   });
-  document.addEventListener('click', (e) => { if (!header.contains(e.target)) closeMenus(); });
+  // 바깥 클릭: 닫는다. 빈 곳을 눌러 초점이 사라졌으면(또는 닫힌 메뉴 안에 남았으면) 연 버튼으로 돌려준다.
+  // 다른 조작 요소를 눌렀으면 그 요소의 초점을 뺏지 않는다.
+  document.addEventListener('click', (e) => {
+    const opener = openMenuButton();
+    if (!opener || header.contains(e.target)) return;
+    const scope = menuScope(opener);
+    closeMenus();
+    const active = document.activeElement;
+    if (!active || active === document.body || scope.some((el) => el.contains(active))) opener.focus();
+  });
+  // 포커스가 열린 메뉴 범위 밖으로 나가면 닫기만 한다(APG Disclosure Navigation). 초점은 옮기지 않는다.
+  // relatedTarget이 없으면(빈 곳 클릭 등) 위 클릭 처리가 맡는다.
+  header.addEventListener('focusout', (e) => {
+    const opener = openMenuButton();
+    if (!opener || !e.relatedTarget) return;
+    if (!menuScope(opener).some((el) => el.contains(e.relatedTarget))) closeMenus();
+  });
   matchMedia('(min-width: 48rem)').addEventListener('change', closeMenus);
 
   initMode();
@@ -86,6 +101,17 @@ export function closeMenus() {
   header.querySelector('.mobile-nav').hidden = true;
   document.documentElement.classList.remove('is-nav-open');
 }
+
+/** 열린 메뉴를 연 버튼: 열린 메가메뉴의 가이드 버튼, 아니면 모바일 메뉴가 열렸을 때 햄버거. 없으면 null. */
+function openMenuButton() {
+  return header.querySelector('.guide-nav__btn[aria-expanded="true"]')
+    ?? (header.querySelector('.mobile-nav').hidden ? null : header.querySelector('.nav-toggle'));
+}
+
+/** 그 메뉴로 치는 범위: 메가메뉴는 버튼이 든 항목, 모바일은 햄버거와 메뉴 본문. */
+const menuScope = (opener) => opener.classList.contains('nav-toggle')
+  ? [opener, header.querySelector('.mobile-nav')]
+  : [opener.closest('.guide-nav__item')];
 
 function toggleMega(btn) {
   const open = btn.getAttribute('aria-expanded') === 'true';
