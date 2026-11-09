@@ -216,7 +216,7 @@ function shapeTables(root) {
 }
 
 function shapeChecklists(root) {
-  root.querySelectorAll('li > input[type="checkbox"]').forEach((input) => {
+  root.querySelectorAll('li > input[type="checkbox"]').forEach((input, i) => {
     input.disabled = true;
     input.tabIndex = -1;
     input.closest('ul, ol')?.classList.add('checklist');
@@ -225,6 +225,9 @@ function shapeChecklists(root) {
     text.className = 'checklist__text';
     while (input.nextSibling) text.append(input.nextSibling);
     input.after(text);
+    // 화면 낭독기가 체크박스마다 그 항목 글을 이름으로 읽게 한다.
+    text.id = `checklist-text-${i}`;
+    input.setAttribute('aria-labelledby', text.id);
   });
 }
 

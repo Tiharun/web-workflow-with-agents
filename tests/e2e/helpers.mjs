@@ -11,8 +11,7 @@ export const pages = [
   { name: 'home', path: '/#/', h1: siteConfig.site.name },
   ...siteConfig.guides.map((g) => ({ name: g.id, path: `/#/${g.id}`, h1: firstHeading(g.file) })),
   { name: 'notfound', path: '/#/no-such-page', h1: siteConfig.ui.notFoundTitle },
-  // 정적 HTML이라 문자열을 그대로 둔다. siteConfig 일치 검사는 M1.
-  { name: '404', path: '/404.html', h1: '찾을 수 없는 페이지입니다' },
+  { name: '404', path: '/404.html', h1: siteConfig.ui.pageNotFoundTitle },
 ];
 
 export async function openPage(page, path) {

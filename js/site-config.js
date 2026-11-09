@@ -6,6 +6,8 @@ export const siteConfig = {
     url: 'https://tiharun.github.io/web-workflow-with-agents/',
     repoUrl: 'https://github.com/Tiharun/web-workflow-with-agents',
     branch: 'main',
+    // index.html <meta name="description">와 같아야 함(tests/e2e/static-copy.spec.mjs)
+    description: '웹사이트를 Claude와 함께 만드는 순서·스킬·프롬프트를 정리한 가이드 3개.',
   },
 
   guides: [
@@ -90,6 +92,13 @@ export const siteConfig = {
     notFoundTitle: '찾을 수 없는 주소입니다',
     notFoundBody: '주소가 바뀌었거나 잘못 입력되었습니다. 아래 가이드에서 다시 시작하세요.',
     rulerLabel: '최종 워크플로우 단계 자',
+    // index.html(noscript)·404.html 정적 문구와 같아야 함(tests/e2e/static-copy.spec.mjs)
+    noscriptTitle: '이 사이트는 JavaScript가 필요합니다',
+    noscriptBody: 'JavaScript를 켜거나, 아래 원본 문서를 바로 여세요.',
+    pageNotFoundDocTitle: '찾을 수 없는 페이지', // 404.html <title> 앞부분
+    pageNotFoundTitle: '찾을 수 없는 페이지입니다',
+    pageNotFoundBody: '주소가 바뀌었거나 잘못 입력되었습니다. 홈에서 가이드를 고르세요.',
+    backHome: '홈으로 가기',
   },
 };
 

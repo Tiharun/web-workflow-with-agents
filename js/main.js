@@ -1,10 +1,12 @@
 // 앱 시작: 헤더, 해시 라우터(#/, #/<가이드>, #/<가이드>/<제목 id>, 그 밖은 찾을 수 없음), 복사 버튼.
-import { siteConfig, guideById } from './site-config.js';
+import { siteConfig } from './site-config.js';
+import { parse } from './router.js';
 import { initHeader, setCurrentGuide, closeMenus } from './header.js';
 import { initFooter } from './footer.js';
 import { initTooltips } from './tooltip.js';
 import { renderHome } from './home.js';
 import { renderGuide, scrollToStage } from './guide.js';
+import { focusEl } from './scroll.js';
 import { loadGuide } from './md.js';
 import { icon } from './icons.js';
 
@@ -19,26 +21,17 @@ initHeader(document.getElementById('site-header'));
 initFooter(document.getElementById('site-footer'));
 initTooltips();
 
-/** '#/final/0단계-준비' → { name: 'guide', guide, stageId } */
-function parse(hash) {
-  let path = hash.replace(/^#\/?/, '');
-  try { path = decodeURIComponent(path); } catch { /* 깨진 주소는 그대로 판정 */ }
-  const [first = '', ...rest] = path.split('/').filter(Boolean);
-  if (!first) return { name: 'home' };
-  const guide = guideById(first);
-  if (!guide) return { name: 'notfound' };
-  return { name: 'guide', guide, stageId: rest.join('/') || null };
-}
-
-async function route() {
+// focusTop: 화면을 새로 그릴 때, 사용자가 누른 이동(같은 주소 다시 누름·다시 시도)이면 초점을 제목으로 옮긴다.
+// 첫 실행·hashchange는 넘기지 않는다. 같은 가이드 안 이동은 단계로 갈 때처럼 늘 제목에 초점을 둔다.
+async function route({ focusTop = false } = {}) {
   const next = parse(location.hash);
   const smooth = smoothNext;
   smoothNext = false;
   closeMenus();
   setCurrentGuide(next.guide?.id ?? null);
 
-  if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('.doc:not([aria-busy])')) {
-    scrollToStage(main, next.stageId, smooth);
+  if (next.name === 'guide' && view.name === 'guide' && view.guideId === next.guide.id && main.querySelector('#doc[data-loaded]')) {
+    scrollToStage(main, next.stageId, smooth, { focusTop: true });
     return;
   }
 
@@ -50,13 +43,15 @@ async function route() {
   if (next.name === 'home') {
     cleanup = renderHome(main);
     scrollTo({ top: 0, behavior: 'instant' });
+    if (focusTop) focusEl(main.querySelector('h1'));
   } else if (next.name === 'guide') {
-    const done = await renderGuide(main, next.guide, next.stageId, { smooth });
+    const done = await renderGuide(main, next.guide, next.stageId, { smooth, focusTop, onRetry: () => route({ focusTop: true }) });
     if (view.guideId === next.guide.id) cleanup = done;
     else done();
   } else {
     renderNotFound();
     scrollTo({ top: 0, behavior: 'instant' });
+    if (focusTop) focusEl(main.querySelector('h1'));
   }
 }
 
@@ -79,15 +74,13 @@ document.addEventListener('click', (e) => {
   if (a.hasAttribute('data-smooth')) smoothNext = true;
   // 같은 주소를 다시 누르면(예: 푸터의 현재 가이드 링크) hashchange가 없으므로 직접 이동한다.
   // a.hash·location.hash 모두 퍼센트 인코딩된 값이라 한글 단계 id도 그대로 비교된다.
-  if (a.hash === location.hash) { e.preventDefault(); route(); }
+  if (a.hash === location.hash) { e.preventDefault(); route({ focusTop: true }); }
 });
 
 // 본문 바로가기: 해시를 쓰지 않고 초점만 옮긴다(해시는 라우터 몫).
 document.querySelector('.skip-link').addEventListener('click', (e) => {
   e.preventDefault();
-  const target = main.querySelector('h1') ?? main;
-  if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
-  target.focus();
+  focusEl(main.querySelector('h1') ?? main, { preventScroll: false });
 });
 
 // 프롬프트 카드 복사
