@@ -195,20 +195,25 @@ function trackScroll(main, article, doc) {
   const links = new Map([...main.querySelectorAll('[data-toc-id]')].map((a) => [a.dataset.tocId, a]));
   const heads = doc.headings.filter((h) => h.level > 1).map((h) => article.querySelector(`#${CSS.escape(h.id)}`)).filter(Boolean);
   let offsets = [];
+  let anchor = 0; // html scroll-padding-top의 계산값(px). 폭에 따라 바뀐다(84px ↔ 137px).
   let current = null;
   let frame = 0;
 
   const measure = () => {
     const y = scrollY;
-    offsets = heads.map((el) => el.getBoundingClientRect().top + y);
+    // 제목으로 이동하면 html scroll-padding-top과 제목의 scroll-margin-top 둘 다만큼 아래에 멈춘다. 그 멈춤선 기준으로 잰다.
+    offsets = heads.map((el) => el.getBoundingClientRect().top + y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0));
+    anchor = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
   };
   const update = () => {
     frame = 0;
     const max = document.documentElement.scrollHeight - innerHeight;
     if (bar) bar.style.transform = `scaleX(${max > 0 ? Math.min(1, scrollY / max) : 0})`;
-    const line = scrollY + parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--anchor-offset') || '120') + 8;
+    const line = scrollY + anchor + 8;
     let idx = -1;
     for (let i = 0; i < offsets.length && offsets[i] <= line; i++) idx = i;
+    // 페이지 끝이면 마지막 제목: 끝의 짧은 절은 멈춤선까지 올라오지 못한다.
+    if (max > 0 && scrollY >= max - 1) idx = heads.length - 1;
     const id = idx >= 0 ? heads[idx].id : null;
     if (id !== current) {
       links.get(current)?.removeAttribute('aria-current');
