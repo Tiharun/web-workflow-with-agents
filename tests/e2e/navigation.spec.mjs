@@ -32,6 +32,22 @@ test.describe('current location', () => {
     await expect(current(page)).toBeFocused();
   });
 
+  for (const width of [1280, 375]) {
+    test(`a stage jump stops the heading just below the sticky bars (${width}px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openPage(page, '/#/final');
+      const id = middle(await tocIds(page));
+      await openPage(page, `/#/final/${encodeURIComponent(id)}`);
+      await twoFrames(page);
+      // 멈춤선 = html scroll-padding-top(헤더 + 80rem 미만 도구 막대 + 20px). 한 번만 적용돼야 한다.
+      const { top, pad } = await page.evaluate((i) => ({
+        top: document.getElementById(i).getBoundingClientRect().top,
+        pad: parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop),
+      }), id);
+      expect(Math.abs(top - pad)).toBeLessThanOrEqual(1);
+    });
+  }
+
   for (const g of siteConfig.guides) {
     test(`page bottom highlights the last heading (${g.id})`, async ({ page }) => {
       await openPage(page, `/#/${g.id}`);
@@ -125,6 +141,26 @@ test.describe('mega menu', () => {
     await expect(guideBtn(page, 'steps')).toBeFocused();
   });
 });
+
+// 메가메뉴는 48rem 이상에서 보인다. 가장 좁은 폭에서도 항목이 화면 밖으로 넘치거나 낱자로 쪼개지지 않아야 한다.
+for (const width of [768, 1024]) {
+  test.describe(`${width}px mega menu`, () => {
+    test.use({ viewport: { width, height: 900 } });
+    for (const g of siteConfig.guides) {
+      test(`mega items fit the viewport (${g.id})`, async ({ page }) => {
+        await openPage(page, '/#/');
+        await guideBtn(page, g.id).click();
+        await page.locator(`#mega-${g.id} a`).last().waitFor();
+        const bad = await page.locator(`#mega-${g.id} a`).evaluateAll((as, w) => as
+          .map((a) => ({ t: a.textContent.trim().slice(0, 12), r: a.getBoundingClientRect(), sw: a.scrollWidth, cw: a.clientWidth, item: !a.matches('.mega__top') }))
+          // 단계·장 항목은 최소 120px(낱자 줄바꿈 방지). '처음부터 읽기'는 글자 폭만큼인 인라인 링크라 제외.
+          .filter(({ r, sw, cw, item }) => r.right > w || (item && r.width < 120) || sw > cw + 1)
+          .map(({ t }) => t), width);
+        expect(bad).toEqual([]);
+      });
+    }
+  });
+}
 
 test.describe('375px mobile menu', () => {
   test.use({ viewport: { width: 375, height: 812 } });
@@ -274,5 +310,49 @@ test.describe('menu body states', () => {
     await btn.click(); // 다시 열기
     await expect(page.locator('#mega-steps .mega__link').first()).toBeVisible();
     expect(calls).toBe(2);
+  });
+});
+
+// 늘 보이는 sticky 막대(헤더·가이드 도구)의 조작 요소는 초점을 받아도 페이지를 굴리지 않는다.
+// 루트 scroll-padding-top 영역 안이라 Chrome이 '가려졌다'고 보고 수백 px 굴렸다(측정 375px 490px, 1280px 460px).
+test.describe('focus on sticky bars keeps the reading position', () => {
+  const stickyControls = '.site-header__inner :is(a, button), .guide-tools :is(a, button)';
+  for (const width of [375, 768, 1280]) {
+    test(`focusing each sticky control does not scroll (${width}px)`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await openPage(page, '/#/final');
+      const moved = await page.evaluate((sel) => [...document.querySelectorAll(sel)]
+        .filter((el) => el.getClientRects().length)
+        .map((el) => { scrollTo({ top: 8000, behavior: 'instant' }); el.focus(); return [el.className, scrollY - 8000]; })
+        .filter(([, d]) => d !== 0), stickyControls);
+      expect(moved).toEqual([]);
+    });
+  }
+
+  test('Escape from the mega menu returns focus without scrolling', async ({ page }) => {
+    await openPage(page, '/#/final');
+    await page.evaluate(() => scrollTo({ top: 8000, behavior: 'instant' }));
+    await guideBtn(page, 'final').click();
+    await page.locator('#mega-final a').first().waitFor();
+    await page.keyboard.press('Tab');
+    await page.keyboard.press('Escape');
+    await expect(guideBtn(page, 'final')).toBeFocused();
+    await twoFrames(page);
+    expect(await page.evaluate(() => scrollY)).toBe(8000);
+  });
+
+  test.describe('375px', () => {
+    test.use({ viewport: { width: 375, height: 812 } });
+    test('closing the toc returns focus to its button without scrolling', async ({ page }) => {
+      await openPage(page, '/#/final');
+      await page.locator('[data-toc-open]').evaluate((b) => b.focus());
+      await page.evaluate(() => scrollTo({ top: 8000, behavior: 'instant' }));
+      await page.keyboard.press('Enter');
+      await expect.poll(() => page.evaluate(() => document.getElementById('toc').open)).toBe(true);
+      await page.keyboard.press('Escape');
+      await expect(page.locator('[data-toc-open]')).toBeFocused();
+      await twoFrames(page);
+      expect(await page.evaluate(() => scrollY)).toBe(8000);
+    });
   });
 });

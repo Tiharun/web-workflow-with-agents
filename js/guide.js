@@ -202,14 +202,13 @@ function trackScroll(main, article, doc) {
   const links = new Map([...main.querySelectorAll('[data-toc-id]')].map((a) => [a.dataset.tocId, a]));
   const heads = doc.headings.filter((h) => h.level > 1).map((h) => article.querySelector(`#${CSS.escape(h.id)}`)).filter(Boolean);
   let offsets = [];
-  let anchor = 0; // html scroll-padding-top의 계산값(px). 폭에 따라 바뀐다(84px ↔ 137px).
+  let anchor = 0; // 제목이 멈추는 높이 = html scroll-padding-top의 계산값(px). 폭에 따라 바뀐다(84px ↔ 137px).
   let current = null;
   let frame = 0;
 
   const measure = () => {
     const y = scrollY;
-    // 제목으로 이동하면 html scroll-padding-top과 제목의 scroll-margin-top 둘 다만큼 아래에 멈춘다. 그 멈춤선 기준으로 잰다.
-    offsets = heads.map((el) => el.getBoundingClientRect().top + y - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0));
+    offsets = heads.map((el) => el.getBoundingClientRect().top + y);
     anchor = parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0;
   };
   const update = () => {
