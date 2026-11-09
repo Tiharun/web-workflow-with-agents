@@ -15,6 +15,7 @@ const main = document.getElementById('main');
 let view = { name: null, guideId: null };
 let cleanup = () => {};
 let smoothNext = false;
+let focusNext = false; // 본문(md) 안 링크로 이동: 누른 링크가 사라지므로 새 화면 제목에 초점을 둔다
 
 document.title = site.name;
 initHeader(document.getElementById('site-header'));
@@ -23,10 +24,12 @@ initTooltips();
 
 // focusTop: 화면을 새로 그릴 때, 사용자가 누른 이동(같은 주소 다시 누름·다시 시도)이면 초점을 제목으로 옮긴다.
 // 첫 실행·hashchange는 넘기지 않는다. 같은 가이드 안 이동은 단계로 갈 때처럼 늘 제목에 초점을 둔다.
-async function route({ focusTop = false } = {}) {
+async function route({ focusTop: focusAsked = false } = {}) {
   const next = parse(location.hash);
   const smooth = smoothNext;
+  const focusTop = focusAsked || focusNext;
   smoothNext = false;
+  focusNext = false;
   closeMenus();
   setCurrentGuide(next.guide?.id ?? null);
 
@@ -72,6 +75,7 @@ document.addEventListener('click', (e) => {
   const a = e.target.closest('a[href^="#/"]');
   if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
   if (a.hasAttribute('data-smooth')) smoothNext = true;
+  if (a.closest('#doc')) focusNext = true;
   // 같은 주소를 다시 누르면(예: 푸터의 현재 가이드 링크) hashchange가 없으므로 직접 이동한다.
   // a.hash·location.hash 모두 퍼센트 인코딩된 값이라 한글 단계 id도 그대로 비교된다.
   if (a.hash === location.hash) { e.preventDefault(); route({ focusTop: true }); }

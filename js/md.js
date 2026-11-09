@@ -41,7 +41,7 @@ export function buildDoc(guide, text) {
   const headings = assignHeadingIds(root);
   const roles = collectRoles(root);
 
-  markLinks(root);
+  markLinks(root, guide);
   shapeCodeBlocks(root);
   shapeTables(root);
   shapeChecklists(root);
@@ -137,20 +137,34 @@ function attachTerms(root, roles) {
   });
 }
 
-function markLinks(root) {
+const decode = (s) => {
+  try { return decodeURIComponent(s); } catch { return s; }
+};
+
+/**
+ * md 안 링크 → 사이트 주소(순수 함수). 외부 링크는 그대로 두고 external로 알린다.
+ * '#조각'은 지금 가이드의 그 제목으로, 옛 가이드 파일 이름(legacyNames)은 '#/<가이드 id>[/<제목 id>]'로 바꾼다.
+ */
+export function rewriteHref(href, guide) {
+  if (/^https?:\/\//i.test(href)) return { href, external: true };
+  const hash = href.indexOf('#');
+  const path = hash < 0 ? href : href.slice(0, hash);
+  const fragment = hash < 0 ? '' : decode(href.slice(hash + 1));
+  if (!path) return { href: fragment ? `#/${guide.id}/${fragment}` : href, external: false };
+  const name = decode(path).split(/[\\/]/).pop();
+  const target = siteConfig.guides.find((g) => g.legacyNames.includes(name));
+  if (!target) return { href, external: false };
+  return { href: fragment ? `#/${target.id}/${fragment}` : `#/${target.id}`, external: false };
+}
+
+function markLinks(root, guide) {
   root.querySelectorAll('a[href]').forEach((a) => {
-    const href = a.getAttribute('href');
-    if (/^https?:\/\//i.test(href)) {
-      a.target = '_blank';
-      a.rel = 'noopener noreferrer';
-      a.insertAdjacentHTML('beforeend', `<span class="visually-hidden"> ${ui.newTab}</span>`);
-      return;
-    }
-    let name = href;
-    try { name = decodeURIComponent(href); } catch { /* 그대로 둔다 */ }
-    name = name.split(/[\\/]/).pop();
-    const target = siteConfig.guides.find((g) => g.legacyNames.includes(name));
-    if (target) a.setAttribute('href', `#/${target.id}`);
+    const { href, external } = rewriteHref(a.getAttribute('href'), guide);
+    a.setAttribute('href', href);
+    if (!external) return;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.insertAdjacentHTML('beforeend', `<span class="visually-hidden"> ${ui.newTab}</span>`);
   });
 }
 
