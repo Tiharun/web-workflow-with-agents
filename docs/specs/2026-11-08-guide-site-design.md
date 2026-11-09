@@ -12,7 +12,7 @@
 
 1. **토큰만 사용**: 색·글꼴·간격·모서리·그림자는 DESIGN.md와 `css/tokens.css`의 토큰만 쓴다. 토큰 블록 밖에 색 값·`font-family`를 쓰지 않는다. 새 값이 필요하면 DESIGN.md부터 고친다. SVG 비주얼도 `currentColor`나 CSS 변수로 칠한다.
 2. **설정 한 곳**: 사이트 이름·URL·저장소 주소·가이드 목록·UI 문구는 `js/site-config.js`에서만 관리한다.
-   - 예외: JS 없이 보여야 하는 정적 문자열(`index.html`의 `<title>`·description·noscript 링크·건너뛰기 문구, `404.html` 전체). 이 값들은 e2e 테스트가 siteConfig와 같은지 검사한다(§6).
+   - 예외: JS 없이 보여야 하는 정적 문자열(`index.html`의 `<title>`·description·noscript 링크·건너뛰기 문구, favicon·OG 메타, `404.html` 전체). 이 값들은 e2e 테스트가 siteConfig와 같은지 검사한다(§6).
 3. **원본 문장 불변**: md 문장은 바꾸지 않고 모양만 재구성한다. 홈 카드 요약 등 siteConfig에 옮긴 원문은 테스트로 md와 대조한다(M6).
 4. **모션**: `transform`·`opacity`만 움직인다. `prefers-reduced-motion: reduce`이면 즉시 표시하고, 스크립트가 꺼져도 글이 보여야 한다.
 5. **의존성**: 배포본은 빌드·npm 의존성이 없다(ADR 0003). 테스트 도구만 `package.json`의 `devDependencies`에 두고 `node_modules/`는 `.gitignore`에 넣는다.
@@ -147,7 +147,7 @@ location.hash ─ router.parse ─ { home | guide+stageId | notfound } ─ main.
   - 디자인 스킬 워크플로우 '1. 전체 흐름 한눈에 보기'
   - 최종 워크플로우 '2. 문서 지도 — 어떤 파일이 무엇의 기준인가'
   - 디자인 스킬 워크플로우 '3. 상황별 빠른 경로'
-- siteConfig 원문(`summary`, `home.lead`)이 md에 그대로 있는지 테스트한다. `<meta name="description">`과 favicon을 정리한다. Three.js는 1차에서 쓰지 않는다.
+- siteConfig 원문(`summary`, `home.lead`)이 md에 그대로 있는지 테스트한다. `<meta name="description">`과 favicon을 정리한다. OG 추가(2026-11-09 사용자 결정): `og:*`·`twitter:card`와 1200×630 그림(`npm run images`). Three.js는 1차에서 쓰지 않는다.
 - 완료 기준
   1. 비주얼 4개가 라이트·다크에서 보이고, 375px에서 넘치지 않는다.
   2. siteConfig의 요약 문장을 한 글자 바꾸면 테스트가 실패한다.

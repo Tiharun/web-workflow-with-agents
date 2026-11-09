@@ -10,6 +10,13 @@ test('index.html static copy matches siteConfig', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(site.name);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', site.description);
+  const meta = (p) => page.locator(`meta[property="${p}"]`);
+  await expect(meta('og:title')).toHaveAttribute('content', site.name);
+  await expect(meta('og:site_name')).toHaveAttribute('content', site.name);
+  await expect(meta('og:description')).toHaveAttribute('content', site.description);
+  await expect(meta('og:url')).toHaveAttribute('content', site.url);
+  await expect(meta('og:image')).toHaveAttribute('content', new URL(site.ogImage, site.url).href);
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
   await expect(page.locator('.skip-link')).toHaveText(ui.skip);
   const box = page.locator('main .state');
   await expect(box.locator('h1')).toHaveText(ui.noscriptTitle);

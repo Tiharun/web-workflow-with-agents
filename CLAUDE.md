@@ -11,9 +11,10 @@
 ## 명령
 - 실행: `python -m http.server 8000 --bind 127.0.0.1` → http://127.0.0.1:8000 (`.claude/launch.json`의 `static`)
 - 빌드: 없음(파일을 그대로 배포)
+- 그림: `npm run images` — favicon PNG·apple-touch-icon·OG 그림(`assets/`)을 만든다. siteConfig 이름·설명, 토큰 색, `assets/favicon.svg`·`tools/og.html`을 바꾸면 다시 실행
 - 테스트:
   - `npm test` — 단위(node:test) + DOM(Playwright, `tests/dom`) + e2e(Playwright). 테스트 서버는 `tests/serve.py`가 8123 포트로 자동 실행
-  - `npm run test:visual` — 시각 기준 대조(375·768·1280·1440 × 라이트·다크, Windows 기준 이미지). 갱신: `npm run test:visual -- --update-snapshots`
+  - `npm run test:visual` — 시각 기준 대조(375·768·1280·1440 × 라이트·다크, Windows 기준 이미지). 갱신: `npm run test:visual -- --update-snapshots=all`(그냥 `--update-snapshots`는 허용 오차 안의 이미지를 다시 쓰지 않는다)
   - 슬롭 검사: `node ~/.claude/skills/hallmark/scripts/sloplint.mjs css/site.css index.html --genre modern-minimal --scope app`
   - 디자인 검사: `impeccable detect --json <파일>`
   - 브라우저: 콘솔 오류 0, Lighthouse 성능·접근성 90 이상(chrome-devtools-mcp)
@@ -31,7 +32,7 @@
 ## 규칙
 1. 색·글꼴은 DESIGN.md와 `css/tokens.css`의 토큰만 쓴다. 토큰 블록 밖에 색 값·`font-family`를 직접 쓰지 않는다. 새 값이 필요하면 DESIGN.md부터 고친다
 2. 사이트 이름·URL·저장소 주소는 `js/site-config.js` 한 곳에서만 관리하고 다른 곳에 하드코딩하지 않는다
-3. 공용 컴포넌트를 재사용한다: 버튼 `.btn`/`.tool-btn`/`.icon-btn`, 카드 `.card`, 아이콘 `js/icons.js`, 툴팁 `js/tooltip.js`, md 변환 `js/md.js`, 모션 `js/motion.js`, 비주얼 `js/visuals.js`. 같은 역할을 새로 만들지 않는다
+3. 공용 컴포넌트를 재사용한다: 버튼 `.btn`/`.tool-btn`/`.icon-btn`, 카드 `.card`, 아이콘 `js/icons.js`, 툴팁 `js/tooltip.js`, md 변환 `js/md.js`, 모션 `js/motion.js`, 비주얼 `js/visuals.js`, 도식 `js/diagrams.js`, 칩 `.chip`. 같은 역할을 새로 만들지 않는다
 4. md 원문 문장은 바꾸지 않는다. 모양만 재구성한다(`docs/brief.md`)
 5. 모션은 `transform`·`opacity`만, `prefers-reduced-motion`이면 즉시 표시, 스크립트가 꺼져도 글이 보여야 한다
 6. 완료 보고 전에 위 검사 출력과 스크린샷(1440·768·375px, 라이트·다크)을 제시한다. 직접 확인하지 못한 항목은 "확인 못 함"으로 적는다

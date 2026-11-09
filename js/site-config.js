@@ -8,6 +8,9 @@ export const siteConfig = {
     branch: 'main',
     // index.html <meta name="description">와 같아야 함(tests/e2e/static-copy.spec.mjs)
     description: '웹사이트를 Claude와 함께 만드는 순서·스킬·프롬프트를 정리한 가이드 3개.',
+    // 아이콘·OG 그림(npm run images가 만든다). index.html·404.html head와 같아야 함(tests/unit/html-head.test.mjs)
+    ogImage: 'assets/og.png', // og:image = new URL(ogImage, url)
+    icons: { svg: 'assets/favicon.svg', png: 'assets/favicon-32.png', apple: 'assets/apple-touch-icon.png' },
   },
 
   guides: [
@@ -60,6 +63,11 @@ export const siteConfig = {
 
   visuals: [
     { guideId: 'final', headingId: '1-전체-루프-한눈에', type: 'stage-ruler' },
+    // 도식(js/diagrams.js). column·columns는 md 표의 열 이름 원문이다.
+    { guideId: 'steps', headingId: '전체-흐름-한눈에-보기', type: 'steps-flow', column: '코드 작성' },
+    { guideId: 'design', headingId: '1-전체-흐름-한눈에-보기', type: 'design-flow' },
+    { guideId: 'final', headingId: '2-문서-지도--어떤-파일이-무엇의-기준인가', type: 'doc-map', columns: { file: '파일', stage: '만드는 단계·스킬', role: '역할' } },
+    { guideId: 'design', headingId: '3-상황별-빠른-경로', type: 'quick-paths', columns: { name: '상황', path: '순서' } },
   ],
 
   // 화면 글(문서 밖 안내 문구). 한 곳에서 고친다.
