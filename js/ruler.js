@@ -5,7 +5,7 @@ import { icon } from './icons.js';
 const { ruler: cfg, ui } = siteConfig;
 
 /** 제목 "4단계. 디자인 방향 고정 ★ 가장 중요" → { num: '4', name: '디자인 방향 고정', key: true } */
-function parseStage(title) {
+export function parseStage(title) {
   const m = title.match(/^(\d+(?:~\d+)?)단계\.\s*(.*)$/);
   const rest = m ? m[2] : title;
   const name = rest.split(' — ')[0].split(' ★')[0].replace(/\s*\([^)]*\)\s*$/, '').trim();

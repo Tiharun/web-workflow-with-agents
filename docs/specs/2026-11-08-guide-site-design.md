@@ -17,6 +17,7 @@
 4. **모션**: `transform`·`opacity`만 움직인다. `prefers-reduced-motion: reduce`이면 즉시 표시하고, 스크립트가 꺼져도 글이 보여야 한다.
 5. **의존성**: 배포본은 빌드·npm 의존성이 없다(ADR 0003). 테스트 도구만 `package.json`의 `devDependencies`에 두고 `node_modules/`는 `.gitignore`에 넣는다.
 6. **문구**: UI 문구는 합니다체로 쓴다. 툴팁에는 문서에 없는 새 설명을 쓰지 않는다.
+7. **대상 브라우저 하한**: Chrome 105·Firefox 110·Safari 16. 레이아웃이 쓰는 컨테이너 쿼리(`@container`)의 지원 시작 버전이다([MDN BCD](https://github.com/mdn/browser-compat-data/blob/main/css/at-rules/container.json)). `visuals.js`의 `reportError`(Chrome 95·Firefox 93·Safari 15.4, [MDN BCD](https://github.com/mdn/browser-compat-data/blob/main/api/_globals/reportError.json))는 이 안에 든다. 하한을 낮추면 `reportError` 대체부터 넣는다.
 
 ## 3. 컴포넌트 구조
 
@@ -28,7 +29,7 @@
 | `js/router.js` (새 파일) | `parse(hash) → { name: 'home' } \| { name: 'guide', guide, stageId } \| { name: 'notfound' }` 순수 함수 | M1 |
 | `js/md.js` | `loadGuide(guide)`: fetch + 가이드당 Promise 캐시 | `buildDoc(guide, text)`를 export해서 fetch와 분리한다(M2) |
 | `js/guide.js` | 가이드 화면: 본문, 좌측 상단 도구, 목차 드로어, 진행 막대, 현재 위치 | `placeVisuals`를 `visuals.js`로 옮긴다(M5) |
-| `js/visuals.js` (새 파일) | `type → (doc, guide) => HTMLElement \| null` 대응표. 짝 제목이 없거나 `null`이면 그 비주얼만 건너뛴다 | M5 |
+| `js/visuals.js` (새 파일) | `type → (doc, guide) => Element \| null`(HTML·SVG 요소) 대응표. 짝 제목이 없거나 `null`이면 그 비주얼만 건너뛴다 | M5 |
 | `js/header.js` | 헤더, 메가메뉴, 모바일 아코디언, 다크 모드 토글 | 단계 0개 처리(M3) |
 | `js/footer.js` (새 파일) | 공통 푸터: 사이트 이름, 가이드 링크, 저장소 링크(`footerHtml` 순수 함수 + `initFooter`) | M0 |
 | `js/home.js` | 홈: 히어로, 단계 자, 입구 카드 3개 | 그대로 |
@@ -65,7 +66,7 @@ location.hash ─ router.parse ─ { home | guide+stageId | notfound } ─ main.
 | 메뉴를 채우다 실패 | 오류 문구 + 가이드 링크. 메뉴를 다시 열면 다시 시도한다 | 구현됨 |
 | 없는 단계 주소 | 가이드 맨 위 + `role="status"` 안내. **처음 들어올 때와 같은 가이드 안에서 단계만 바뀔 때 모두** 같게 처리한다 | 고칠 것(M1) |
 | JS 꺼짐 | noscript 안내 + md 원본 링크 3개 | 구현됨 |
-| 비주얼 짝 없음 | 그 비주얼만 건너뛰고 글은 그대로 둔다 | 구현됨 → `visuals.js`로 이동(M5) |
+| 비주얼 짝 없음 | 그 비주얼만 건너뛰고 글은 그대로 둔다. 모르는 종류·그리다 난 예외는 `reportError`로 알리고 그 비주얼만 건너뛴다(목차·진행 막대·모션은 그대로) | 구현됨(M5, visuals.js) |
 | 복사 실패 | `navigator.clipboard` 실패 → `execCommand` 대체 → 그래도 실패하면 '복사 못 함' + 화면 낭독기 알림 | 구현됨 |
 | localStorage 막힘 | 저장하지 않고 이번 화면에만 적용한다 | 구현됨 |
 | 스켈레톤 | **불러오기가 아직 안 끝났을 때만** 보인다. 캐시가 이미 끝났으면 바로 본문을 그린다 | 구현됨 |
