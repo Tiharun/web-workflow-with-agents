@@ -227,3 +227,52 @@ for (const motion of ['reduce', 'no-preference']) {
     });
   });
 }
+
+const stepsGuide = siteConfig.guides.find((g) => g.id === 'steps');
+const emptyStepsMd = '# 빈 가이드\n\n### 소제목\n\n본문\n';
+const serveEmptySteps = (page) => page.route(`**/${stepsGuide.file}`, (route) => route.fulfill({ status: 200, contentType: 'text/markdown; charset=utf-8', body: emptyStepsMd }));
+
+test.describe('menu body states', () => {
+  test('zero stages: mega shows only the guide-top link', async ({ page }) => {
+    await serveEmptySteps(page);
+    await openPage(page, '/#/');
+    await guideBtn(page, 'steps').click();
+    const mega = page.locator('#mega-steps');
+    await expect(mega.locator('a')).toHaveCount(1);
+    await expect(mega.locator('a')).toHaveText(siteConfig.ui.guideTop);
+    await expect(mega.locator('a')).toHaveAttribute('href', '#/steps');
+    await expect(mega.locator('ol')).toHaveCount(0);
+  });
+
+  test.describe('375px', () => {
+    test.use({ viewport: { width: 375, height: 812 } });
+    test('zero stages: accordion shows only the guide-top link', async ({ page }) => {
+      await serveEmptySteps(page);
+      await openPage(page, '/#/');
+      await page.locator('.nav-toggle').click();
+      await page.locator('.acc__btn[data-guide="steps"]').click();
+      const acc = page.locator('#acc-steps');
+      await expect(acc.locator('a')).toHaveCount(1);
+      await expect(acc.locator('a')).toHaveText(siteConfig.ui.guideTop);
+      await expect(acc.locator('ol')).toHaveCount(0);
+    });
+  });
+
+  test('menu fill failure shows the error and retries on reopen', async ({ page }) => {
+    // 첫 화면 뒤 미리 받기가 요청을 먼저 쓰지 않게 막는다.
+    await page.addInitScript(() => { window.requestIdleCallback = () => 0; });
+    let calls = 0;
+    await page.route(`**/${stepsGuide.file}`, (route) => (++calls === 1 ? route.abort() : route.continue()));
+    await openPage(page, '/#/');
+    const btn = guideBtn(page, 'steps');
+    await btn.click();
+    const error = page.locator('#mega-steps .menu-error');
+    await expect(error).toBeVisible();
+    await expect(error).toContainText(siteConfig.ui.loadError);
+    await expect(error.locator('a[href="#/steps"]')).toHaveCount(1);
+    await btn.click(); // 닫기
+    await btn.click(); // 다시 열기
+    await expect(page.locator('#mega-steps .mega__link').first()).toBeVisible();
+    expect(calls).toBe(2);
+  });
+});

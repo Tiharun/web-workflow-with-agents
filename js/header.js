@@ -159,7 +159,14 @@ async function fillMenu(id, body, kind) {
 
 const link = (guide, h, cls = '') => `<a class="${cls}" href="#/${guide.id}/${h.id}" data-smooth>${escapeHtml(h.title)}</a>`;
 
+// 단계가 0개면(스펙 §5) '처음부터 읽기'만 둔다.
 function megaHtml(guide, doc) {
+  const head = `
+    <div class="mega__col mega__col--head">
+      <p class="mega__title">${guide.menuLabel}</p>
+      <a class="mega__top" href="#/${guide.id}" data-smooth>${ui.guideTop}${icon('right')}</a>
+    </div>`;
+  if (!doc.stages.length) return head;
   const expanded = doc.stages.find((s) => s.children.length);
   const chapters = doc.stages
     .map((s) => `<li${s === expanded ? ' class="is-expanded"' : ''}>${link(guide, s, 'mega__link')}</li>`)
@@ -170,20 +177,18 @@ function megaHtml(guide, doc) {
          <ol class="mega__stages" aria-labelledby="mega-cap-${guide.id}">${expanded.children.map((c) => `<li>${link(guide, c, 'mega__stage')}</li>`).join('')}</ol>
        </div>`
     : '';
-  return `
-    <div class="mega__col mega__col--head">
-      <p class="mega__title">${guide.menuLabel}</p>
-      <a class="mega__top" href="#/${guide.id}" data-smooth>${ui.guideTop}${icon('right')}</a>
-    </div>
+  return `${head}
     <div class="mega__col mega__col--chapters${expanded ? '' : ' is-wide'}"><ol class="mega__chapters">${chapters}</ol></div>
     ${stagesCol}`;
 }
 
 function accHtml(guide, doc) {
+  const top = `<a class="acc__top" href="#/${guide.id}" data-smooth>${ui.guideTop}${icon('right')}</a>`;
+  if (!doc.stages.length) return top;
   const items = doc.stages
     .map((s) => `<li>${link(guide, s, 'acc__link')}${s.children.length ? `<ol class="acc__sub">${s.children.map((c) => `<li>${link(guide, c, 'acc__link acc__link--sub')}</li>`).join('')}</ol>` : ''}</li>`)
     .join('');
-  return `<a class="acc__top" href="#/${guide.id}" data-smooth>${ui.guideTop}${icon('right')}</a><ol class="acc__list">${items}</ol>`;
+  return `${top}<ol class="acc__list">${items}</ol>`;
 }
 
 export const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
