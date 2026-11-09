@@ -4,7 +4,7 @@ import { visualTypes } from '../../js/visuals.js';
 import { siteConfig } from '../../js/site-config.js';
 
 test('every configured type is registered', () => {
-  for (const v of siteConfig.visuals) assert.equal(typeof visualTypes[v.type], 'function', v.type);
+  for (const v of siteConfig.visuals) assert.ok(Object.hasOwn(visualTypes, v.type) && typeof visualTypes[v.type] === 'function', v.type);
 });
 
 test('stage-ruler only targets the ruler guide', () => {

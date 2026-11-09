@@ -3,7 +3,7 @@
 import { siteConfig } from './site-config.js';
 import { buildRuler } from './ruler.js';
 
-/** type → (doc, guide) => HTMLElement | null. null이면 그 비주얼만 숨긴다(오류 아님). builder는 동기 함수다. */
+/** type → (doc, guide) => Element | null(HTML·SVG 요소). null이면 그 비주얼만 숨긴다(오류 아님). builder는 동기 함수다. */
 export const visualTypes = {
   // 단계 자는 최종 워크플로우 가이드에만 붙는다(다른 가이드의 문서로는 단계를 만들 수 없다).
   'stage-ruler': (doc, guide) => (guide.id === siteConfig.ruler.guideId ? buildRuler(doc) : null),
@@ -20,7 +20,7 @@ export function placeVisuals(article, guide, doc, list = siteConfig.visuals) {
     if (guideId !== guide.id) continue;
     const heading = article.querySelector(`#${CSS.escape(headingId)}`);
     if (!heading) continue;
-    const build = visualTypes[type];
+    const build = Object.hasOwn(visualTypes, type) ? visualTypes[type] : null; // 'toString' 같은 원형 키는 종류가 아니다
     if (typeof build !== 'function') {
       reportError(new Error(`알 수 없는 비주얼 종류: ${type}`));
       continue;
@@ -28,6 +28,7 @@ export function placeVisuals(article, guide, doc, list = siteConfig.visuals) {
     let el;
     try {
       el = build(doc, guide);
+      if (el != null && !(el instanceof Element)) throw new TypeError('builder가 요소가 아닌 값을 돌려줌');
     } catch (err) {
       reportError(new Error(`비주얼을 그리지 못함: ${type} → #${headingId}`, { cause: err }));
       continue;

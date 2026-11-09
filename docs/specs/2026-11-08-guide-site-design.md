@@ -17,6 +17,7 @@
 4. **모션**: `transform`·`opacity`만 움직인다. `prefers-reduced-motion: reduce`이면 즉시 표시하고, 스크립트가 꺼져도 글이 보여야 한다.
 5. **의존성**: 배포본은 빌드·npm 의존성이 없다(ADR 0003). 테스트 도구만 `package.json`의 `devDependencies`에 두고 `node_modules/`는 `.gitignore`에 넣는다.
 6. **문구**: UI 문구는 합니다체로 쓴다. 툴팁에는 문서에 없는 새 설명을 쓰지 않는다.
+7. **대상 브라우저 하한**: Chrome 105·Firefox 110·Safari 16. 레이아웃이 쓰는 컨테이너 쿼리(`@container`)의 지원 시작 버전이다([MDN BCD](https://github.com/mdn/browser-compat-data/blob/main/css/at-rules/container.json)). `visuals.js`의 `reportError`(Chrome 95·Firefox 93·Safari 15.4, [MDN BCD](https://github.com/mdn/browser-compat-data/blob/main/api/_globals/reportError.json))는 이 안에 든다. 하한을 낮추면 `reportError` 대체부터 넣는다.
 
 ## 3. 컴포넌트 구조
 
@@ -28,7 +29,7 @@
 | `js/router.js` (새 파일) | `parse(hash) → { name: 'home' } \| { name: 'guide', guide, stageId } \| { name: 'notfound' }` 순수 함수 | M1 |
 | `js/md.js` | `loadGuide(guide)`: fetch + 가이드당 Promise 캐시 | `buildDoc(guide, text)`를 export해서 fetch와 분리한다(M2) |
 | `js/guide.js` | 가이드 화면: 본문, 좌측 상단 도구, 목차 드로어, 진행 막대, 현재 위치 | `placeVisuals`를 `visuals.js`로 옮긴다(M5) |
-| `js/visuals.js` (새 파일) | `type → (doc, guide) => HTMLElement \| null` 대응표. 짝 제목이 없거나 `null`이면 그 비주얼만 건너뛴다 | M5 |
+| `js/visuals.js` (새 파일) | `type → (doc, guide) => Element \| null`(HTML·SVG 요소) 대응표. 짝 제목이 없거나 `null`이면 그 비주얼만 건너뛴다 | M5 |
 | `js/header.js` | 헤더, 메가메뉴, 모바일 아코디언, 다크 모드 토글 | 단계 0개 처리(M3) |
 | `js/footer.js` (새 파일) | 공통 푸터: 사이트 이름, 가이드 링크, 저장소 링크(`footerHtml` 순수 함수 + `initFooter`) | M0 |
 | `js/home.js` | 홈: 히어로, 단계 자, 입구 카드 3개 | 그대로 |

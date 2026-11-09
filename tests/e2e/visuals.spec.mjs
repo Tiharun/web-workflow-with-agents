@@ -63,10 +63,24 @@ test('a failing visual builder is reported and leaves the toc intact', async ({ 
   expect(errs).toEqual([`비주얼을 그리지 못함: ${v.type} → #${v.headingId}`]); // 묻히지 않고 정확히 1건 보고된다
 });
 
+test('a failing visual builder still scrolls to the requested stage', async ({ page }) => {
+  await openPage(page, `/#/${v.guideId}`);
+  const target = (await tocIds(page)).at(-1);
+  const errs = errors(page);
+  await patch(page, 'ruler.js', `export function buildRuler(doc, { variant = 'auto' } = {}) {`,
+    `export function buildRuler(doc, { variant = 'auto' } = {}) { if (location.hash.startsWith('#/${v.guideId}')) throw new Error('boom');`);
+  await page.goto('about:blank');
+  await openPage(page, `/#/${v.guideId}/${target}`);
+  await expect(page.locator(`#doc [id="${target}"]`)).toBeInViewport();
+  expect(errs).toEqual([`비주얼을 그리지 못함: ${v.type} → #${v.headingId}`]);
+});
+
 test('visuals are placed once across stage changes and revisits', async ({ page }) => {
   await openPage(page, `/#/${v.guideId}`);
   const stage = await page.locator('.visual .ruler__link').last().getAttribute('href');
   await page.evaluate((h) => { location.hash = h; }, stage);
+  await expect(page.locator(`[id="${decodeURIComponent(stage.split('/').pop())}"]`)).toBeInViewport();
+  await expect(page.locator('#doc .visual')).toHaveCount(1);
   await page.evaluate(() => { location.hash = '#/'; });
   await page.locator('.home').waitFor();
   await page.evaluate((id) => { location.hash = `#/${id}`; }, v.guideId);
@@ -77,9 +91,13 @@ test('visuals are placed once across stage changes and revisits', async ({ page 
 test('the guide ruler stays inside the text column at 375px', async ({ page }) => {
   await page.setViewportSize({ width: 375, height: 800 });
   await openPage(page, `/#/${v.guideId}`);
-  const [right, docRight] = await page.locator('.visual').evaluate((f) => [
-    Math.max(...[...f.querySelectorAll('*')].map((e) => e.getBoundingClientRect().right)),
-    document.querySelector('#doc').getBoundingClientRect().right,
-  ]);
-  expect(right).toBeLessThanOrEqual(docRight);
+  const box = await page.locator('.visual').evaluate((f) => {
+    const rects = [...f.querySelectorAll('*')].map((e) => e.getBoundingClientRect());
+    const doc = document.querySelector('#doc').getBoundingClientRect();
+    const root = document.documentElement;
+    return { left: Math.min(...rects.map((r) => r.left)), right: Math.max(...rects.map((r) => r.right)), docLeft: doc.left, docRight: doc.right, extra: root.scrollWidth - root.clientWidth };
+  });
+  expect(box.left).toBeGreaterThanOrEqual(box.docLeft);
+  expect(box.right).toBeLessThanOrEqual(box.docRight);
+  expect(box.extra).toBe(0);
 });
