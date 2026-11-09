@@ -244,6 +244,8 @@ button { cursor: pointer; color: inherit; }
   .table--cards td::before { content: attr(data-label); position: absolute; left: 0; top: var(--space-2xs); width: 6.5rem; color: var(--color-muted); font-size: var(--text-xs); font-weight: 400; padding-top: 0.15em; }
   .table--cards td:first-child { display: block; padding: 0 0 var(--space-xs); margin-bottom: var(--space-2xs); border-bottom: var(--rule-hair) solid var(--color-rule); font-size: var(--text-md); }
   .table--cards td:first-child::before { content: none; }
+  /* 카드형 표는 가로 스크롤이 없다. 긴 스킬 이름이 칸을 넘지 않도록 칸 안에서 끊는다(400% 확대 = 320px, WCAG 1.4.10). */
+  .table--cards td code { overflow-wrap: anywhere; }
 }
 
 /* read-only checklist */

@@ -59,6 +59,8 @@ export const screens = [
     await openPage(page, '/#/final');
     await page.locator('[data-toc-open]').click();
     await page.locator('#toc[open]').waitFor();
+    // 서랍은 slide-in 애니메이션으로 들어온다. 끝나기 전에 재면 화면 왼쪽 밖에 있다(측정).
+    await page.locator('#toc').evaluate((el) => Promise.all(el.getAnimations().map((a) => a.finished)));
   } },
   { name: 'md-error', open: async (page) => {
     await page.route('**/content/final-workflow.md', (r) => r.abort());
@@ -164,6 +166,28 @@ async function sampleContrast({ png, targets }) {
   }
   return fails;
 }
+
+/**
+ * 가로로 넘친 요소 목록(최대 10개, '태그.클래스 left..right').
+ * html·body가 overflow-x: clip이라 문서 폭으로는 넘침이 드러나지 않는다(pages.spec 'footer does not overflow').
+ * 그래서 보이는 요소마다 좌우 끝을 잰다. 뷰포트 안에 있는 스크롤·클립 조상(표·도식 상자)이 잘라 주는 요소는 넘침이 아니다.
+ */
+export const overflowing = (page) => page.evaluate(() => {
+  const vw = document.documentElement.clientWidth;
+  const inside = (r) => r.left >= -0.5 && r.right <= vw + 0.5;
+  const out = new Set();
+  for (const el of document.querySelectorAll('body *')) {
+    if (!el.checkVisibility({ visibilityProperty: true })) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0 || inside(r)) continue;
+    let clipped = false;
+    for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+      if (getComputedStyle(p).overflowX !== 'visible' && inside(p.getBoundingClientRect())) { clipped = true; break; }
+    }
+    if (!clipped) out.add(`${el.tagName}.${typeof el.className === 'string' ? el.className.split(' ')[0] : ''} ${Math.round(r.left)}..${Math.round(r.right)}`);
+  }
+  return [...out].slice(0, 10);
+});
 
 /** requestAnimationFrame 두 번: 스크롤 뒤 rAF로 미룬 갱신이 끝날 때까지 기다린다. */
 export const twoFrames = (page) => page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
