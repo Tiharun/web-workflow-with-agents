@@ -1,0 +1,25 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [
+      "design-system/web-workflow-guide/playground.html",
+      "design-system/web-workflow-guide/guide-layout-playground.html"
+    ],
+    "ignoreValues": [
+      {
+        "rule": "cramped-padding",
+        "value": "*",
+        "files": [
+          "design-system/web-workflow-guide/playground.html"
+        ],
+        "createdAt": "2026-11-08T07:32:30.205Z",
+        "reason": "Claude triage: .tablewrap의 자식은 table이고 th/td에 padding 10px 12px가 있어 글자가 테두리에서 떨어져 있음(브라우저 렌더 확인)"
+      },
+      {
+        "rule": "overused-font",
+        "value": "inter",
+        "createdAt": "2026-11-08T08:13:06.682Z"
+      }
+    ]
+  }
+}
