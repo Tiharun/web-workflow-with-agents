@@ -89,6 +89,17 @@ for (const p of pages) {
     await expect(h.locator('.mode-toggle')).toBeVisible();
   });
 }
+// 현재 가이드 밑줄(DESIGN.md: 아래 2px 코발트 선). 위 모서리가 둥근 버튼에 inset 그림자로 그리면
+// 둥근 옆면을 따라 그림자 조각이 비친다. 그래서 버튼 폭 전체의 2px 선으로 그리고 그림자는 쓰지 않는다.
+test('current guide underline is a full-width 2px line without edge slivers', async ({ page }) => {
+  await openPage(page, '/#/final');
+  const s = await page.locator('.guide-nav__btn[aria-current]').evaluate((b) => {
+    const line = getComputedStyle(b, '::after');
+    return { shadow: getComputedStyle(b).boxShadow, height: line.height, width: parseFloat(line.width), btn: b.getBoundingClientRect().width };
+  });
+  expect(s).toMatchObject({ shadow: 'none', height: '2px' });
+  expect(s.width).toBeCloseTo(s.btn, 1);
+});
 test('404 header mega menu loads stages', async ({ page }) => {
   await openPage(page, '/404.html');
   await page.locator('.guide-nav__btn[data-guide="final"]').click();
