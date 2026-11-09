@@ -170,3 +170,60 @@ test.describe('motion allowed', () => {
     await expect.poll(() => page.evaluate(() => window.__ys.length), { timeout: 3000 }).toBeGreaterThan(2);
   });
 });
+
+for (const motion of ['reduce', 'no-preference']) {
+  test.describe(`toc drawer (motion ${motion})`, () => {
+    test.use({ reducedMotion: motion });
+    const tocBtn = (page) => page.locator('[data-toc-open]');
+    const tocOpen = (page) => page.evaluate(() => document.getElementById('toc').open);
+    const openAtMiddle = async (page) => {
+      await openPage(page, '/#/final');
+      const id = middle(await tocIds(page));
+      await openPage(page, `/#/final/${encodeURIComponent(id)}`);
+      await twoFrames(page);
+      return id;
+    };
+
+    test('toc opens from the keyboard on the current item', async ({ page }) => {
+      await openAtMiddle(page);
+      await tocBtn(page).focus();
+      await page.keyboard.press('Enter');
+      await expect.poll(() => tocOpen(page)).toBe(true);
+      await expect(tocBtn(page)).toHaveAttribute('aria-expanded', 'true');
+      await expect(current(page)).toBeFocused();
+    });
+
+    test('toc closes on Escape and focus returns to the toc button', async ({ page }) => {
+      await openAtMiddle(page);
+      await tocBtn(page).focus();
+      await page.keyboard.press('Enter');
+      await expect(current(page)).toBeFocused();
+      await page.keyboard.press('Escape');
+      await expect.poll(() => tocOpen(page)).toBe(false);
+      await expect(tocBtn(page)).toBeFocused();
+      await expect(tocBtn(page)).toHaveAttribute('aria-expanded', 'false');
+    });
+
+    test('toc closes on backdrop click and focus returns to the toc button', async ({ page }) => {
+      await openAtMiddle(page);
+      await tocBtn(page).click();
+      await expect.poll(() => tocOpen(page)).toBe(true);
+      // 드로어 폭은 min(24rem, 88vw)라 오른쪽 끝은 늘 배경이다.
+      await page.mouse.click(page.viewportSize().width - 20, 400);
+      await expect.poll(() => tocOpen(page)).toBe(false);
+      await expect(tocBtn(page)).toBeFocused();
+    });
+
+    test('toc link focuses the chosen heading', async ({ page }) => {
+      await openPage(page, '/#/final');
+      await tocBtn(page).click();
+      const ids = await tocIds(page);
+      const id = ids[Math.floor(ids.length / 3)];
+      await page.locator(`#toc a[data-toc-id="${id}"]`).click();
+      await page.waitForFunction(() => { const d = document.getElementById('toc'); return !d.open && !d.classList.contains('is-closing'); });
+      await twoFrames(page);
+      await expect(page.locator(`[id="${id}"]`)).toBeFocused();
+      expect(await page.evaluate(() => decodeURIComponent(location.hash))).toMatch(new RegExp(`/${id}$`));
+    });
+  });
+}

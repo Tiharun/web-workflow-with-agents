@@ -166,7 +166,10 @@ function buildToc(main, guide, doc) {
     current?.focus();
   };
   // 닫을 때도 왼쪽으로 밀려 들어간 뒤 닫는다. 동작 줄이기면 바로 닫는다.
+  // 목차 항목으로 닫으면 그 제목 id를 기억해 둔다: 닫히는 동안은 모달이라 본문에 초점을 줄 수 없고,
+  // dialog.close()는 초점을 [목차] 버튼으로 되돌린다. 그래서 close 이벤트(초점 복귀 뒤)에서 제목으로 옮긴다.
   let timer = 0;
+  let chosenId = null;
   const close = () => {
     if (!dialog.open || dialog.classList.contains('is-closing')) return;
     if (!motionOK()) { dialog.close(); return; }
@@ -176,6 +179,8 @@ function buildToc(main, guide, doc) {
   openBtn.addEventListener('click', open);
   dialog.querySelector('[data-toc-close]').addEventListener('click', close);
   dialog.addEventListener('click', (e) => {
+    const a = e.target.closest('a[data-toc-id]');
+    if (a) chosenId = a.dataset.tocId;
     if (e.target === dialog || e.target.closest('a')) close();
   });
   dialog.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
@@ -186,6 +191,8 @@ function buildToc(main, guide, doc) {
     clearTimeout(timer);
     dialog.classList.remove('is-closing');
     openBtn.setAttribute('aria-expanded', 'false');
+    if (chosenId) focusEl(main.querySelector('#doc').querySelector(`#${CSS.escape(chosenId)}`));
+    chosenId = null;
   });
 }
 
