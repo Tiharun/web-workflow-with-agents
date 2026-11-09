@@ -109,3 +109,43 @@ test('404 header mega menu loads stages', async ({ page }) => {
   await expect(page).toHaveURL(/\/#\/final\//);
   await expect(page.locator('.doc:not([aria-busy]) h1')).toBeVisible();
 });
+// 읽기 전용 체크 목록: 화면 낭독기가 체크박스마다 그 항목 글을 읽어야 한다(Lighthouse 'label').
+test('read-only checklist boxes are named by their item text', async ({ page }) => {
+  await openPage(page, '/#/final');
+  const boxes = page.locator('#doc .checklist input[type="checkbox"]');
+  expect(await boxes.count()).toBeGreaterThan(0);
+  const named = await boxes.evaluateAll((list) => list.map((b) => {
+    const ids = b.getAttribute('aria-labelledby')?.split(' ') ?? [];
+    const label = ids.map((id) => document.getElementById(id)?.textContent ?? '').join(' ').trim();
+    return label !== '' && label === b.closest('li').textContent.trim();
+  }));
+  expect(named.every(Boolean)).toBe(true);
+  await expect(page.getByRole('checkbox', { name: '핵심 기능 5개 이하, "안 만들 것" 목록이 있다' })).toHaveCount(1);
+});
+// 불러오는 동안 짧은 스켈레톤 아래로 푸터가 화면에 보였다가, 본문이 오면 밀려 내려가며 레이아웃 이동(CLS)이 생겼다.
+test('opening a guide does not shift the layout while the md loads', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.__cls = 0;
+    new PerformanceObserver((list) => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true });
+  });
+  // 스켈레톤이 그려지도록 md 응답을 잠깐 늦춘다.
+  await page.route('**/content/final-workflow.md', async (r) => { await new Promise((res) => setTimeout(res, 500)); await r.continue(); });
+  await openPage(page, '/#/final');
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+  expect(await page.evaluate(() => window.__cls)).toBeLessThan(0.05);
+});
+// 홈·404는 정적 머리말·빈 푸터를 먼저 그리고 스크립트가 채운다. 느린 기기에서 채워질 때 레이아웃이 움직이지 않아야 한다.
+for (const [name, path, script] of [['home', '/#/', 'main.js'], ['404', '/404.html', 'not-found-page.js']]) for (const width of [375, 1280]) {
+  test(`${name} page does not shift when the header and footer fill in (${width}px)`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 800 });
+    await page.addInitScript(() => {
+      window.__cls = 0;
+      new PerformanceObserver((list) => { for (const e of list.getEntries()) if (!e.hadRecentInput) window.__cls += e.value; }).observe({ type: 'layout-shift', buffered: true });
+    });
+    await page.route(`**/js/${script}`, async (r) => { await new Promise((res) => setTimeout(res, 500)); await r.continue(); });
+    await openPage(page, path);
+    await page.locator('footer.site-footer .brand').waitFor();
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
+    expect(await page.evaluate(() => window.__cls)).toBeLessThan(0.05);
+  });
+}
