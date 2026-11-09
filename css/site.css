@@ -375,6 +375,25 @@ button { cursor: pointer; color: inherit; }
   .flow--stagger .flow__step:nth-child(even) .flow__name::before { content: ""; position: absolute; left: 50%; bottom: calc(100% + 4px); width: 1px; height: calc(var(--space-xs) + 2.7em - 4px); background: var(--color-rule-2); }
 }
 
+.chip { display: inline-block; max-width: 100%; padding: var(--space-3xs) var(--space-xs); border: var(--rule-hair) solid var(--color-rule-2); border-radius: var(--radius-input); background: var(--color-paper-2); color: var(--color-ink); font-size: var(--text-xs); line-height: 1.45; overflow-wrap: break-word; }
+.chip__seg { display: inline-block; max-width: 100%; overflow-wrap: anywhere; } /* 한 조각이 한 줄보다 길 때만 조각 안에서 끊는다 */
+.chip.is-key { border-color: var(--color-accent); background: var(--color-accent-wash); }
+.docmap { container-type: inline-size; }
+.docmap__lanes { display: grid; gap: var(--space-md); margin: 0; padding: 0; list-style: none; }
+.docmap__lane { position: relative; min-width: 0; }
+.docmap__head { display: flex; align-items: baseline; gap: var(--space-xs); margin: 0 0 var(--space-sm); padding-top: var(--space-xs); border-top: var(--rule-hair) solid var(--color-rule-strong); }
+.docmap__num { color: var(--color-ink); font-size: var(--text-md); font-weight: 650; font-variant-numeric: tabular-nums; }
+.docmap__name { color: var(--color-ink-2); font-size: var(--text-xs); line-height: 1.35; }
+.docmap__files { display: flex; flex-wrap: wrap; gap: var(--space-2xs); margin: 0; padding: 0; list-style: none; }
+.docmap__file { font-family: var(--font-outlier); }
+.docmap__tag { display: block; color: var(--color-accent-deep); font-family: var(--font-body); font-weight: 600; }
+.docmap__arrow { display: none; } /* 세로형은 위아래 순서가 분명하다 */
+@container (min-width: 40rem) {
+  .docmap__lanes { grid-template-columns: repeat(var(--n), minmax(0, 1fr)); gap: var(--space-lg); }
+  .docmap__files { flex-direction: column; align-items: flex-start; }
+  .docmap__arrow { display: block; position: absolute; left: calc(-1 * var(--space-lg) / 2); top: calc(var(--space-xs) + 0.75rem); width: 1rem; height: 1rem; color: var(--color-rule-strong); transform: translate(-50%, -50%); }
+}
+
 /* ---------- home ---------- */
 .hero { display: grid; gap: var(--space-lg); padding-block: var(--space-xl) var(--space-lg); }
 .hero__text { display: grid; gap: var(--space-md); }

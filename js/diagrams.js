@@ -1,7 +1,7 @@
 // 도식 비주얼: md 구역의 표·제목을 읽어 그린다(계획 M6). 글자는 모두 md 원문이고 textContent로만 넣는다.
 // 글자·링크는 HTML, 기호·화살표만 aria-hidden SVG(icons.js, currentColor)다. 최상위에서 DOM을 쓰지 않는다(Node 단위 테스트가 import).
 import { icon } from './icons.js';
-import { parseStage } from './ruler.js';
+import { parseStage, stagesFromDoc } from './ruler.js';
 
 const HEADING = /^H[1-6]$/;
 
@@ -49,6 +49,11 @@ const el = (tag, cls, text) => {
   if (text != null) e.textContent = text;
   return e;
 };
+/**
+ * 경로 글자: '/'·'-' 뒤마다 조각(inline-block)으로 나눠 조각 사이에서만 줄을 바꾼다.
+ * <wbr>만 두면 브라우저가 한글과 '>' 사이도 끊어 '>-design.md'처럼 기호로 줄이 시작됐다(측정).
+ */
+const pathText = (text) => text.split(/(?<=[/-])/).map((part) => el('span', 'chip__seg', part));
 const svg = (name, cls) => {
   const t = document.createElement('template');
   t.innerHTML = icon(name, `icon ${cls}`);
@@ -124,4 +129,43 @@ export function designFlow(doc, guide, item) {
     .filter(({ b }) => b)
     .map(({ h, b }) => ({ num: b.num, label: `[${b.num}]`, name: b.name, href: `#/${guide.id}/${h.id}`, optional: b.optional }));
   return items.length < 2 ? null : buildFlow(items, item.headingId);
+}
+
+/** 문서 지도: 표의 파일을 '만드는 단계' 첫 토큰(1~3, 4, 5, 6…)별 칸으로 묶는다. 역할 칸이 굵은 행은 강조. 표와 내용이 같아 낭독기에서는 숨긴다. */
+export function docMap(doc, guide, item) {
+  const table = firstTable(sectionOf(doc, item.headingId));
+  if (!table) return null;
+  const [fc, sc, rc] = ['file', 'stage', 'role'].map((k) => col(table, item.columns[k]));
+  if (fc < 0 || sc < 0) return null;
+  const lanes = new Map();
+  for (const row of table.rows) {
+    const token = row[sc]?.textContent.trim().match(/^[\d~]+/)?.[0];
+    if (!token) continue;
+    if (!lanes.has(token)) lanes.set(token, []);
+    lanes.get(token).push({ file: row[fc].textContent.trim(), tag: rc < 0 ? null : row[rc]?.querySelector('strong')?.textContent.trim() });
+  }
+  if (!lanes.size) return null;
+  const names = new Map(stagesFromDoc(doc).map((s) => [s.num, s.name]));
+  const root = el('div', 'docmap');
+  root.setAttribute('aria-hidden', 'true');
+  const list = el('ol', 'docmap__lanes');
+  list.style.setProperty('--n', lanes.size);
+  for (const [token, files] of lanes) {
+    const lane = el('li', 'docmap__lane');
+    const head = el('p', 'docmap__head');
+    head.append(el('span', 'docmap__num', token));
+    if (names.has(token)) head.append(el('span', 'docmap__name', names.get(token)));
+    const ul = el('ul', 'docmap__files');
+    for (const f of files) {
+      const chip = el('li', f.tag ? 'chip docmap__file is-key' : 'chip docmap__file');
+      chip.append(...pathText(f.file));
+      if (f.tag) chip.append(el('span', 'docmap__tag', f.tag));
+      ul.append(chip);
+    }
+    if (list.children.length) lane.append(svg('right', 'docmap__arrow'));
+    lane.append(head, ul);
+    list.append(lane);
+  }
+  root.append(list);
+  return root;
 }

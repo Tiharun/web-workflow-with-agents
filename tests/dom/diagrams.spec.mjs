@@ -87,3 +87,21 @@ test('md text is inserted as text, not markup', async ({ page }) => {
   await expect(page.locator('#out b')).toHaveCount(0);
   await expect(page.locator('#out .flow__name').first()).toContainText('<b>x</b>');
 });
+
+test('doc map groups files into stage lanes and marks the design source', async ({ page }) => {
+  const r = await build(page, md('final'), 'final', item('doc-map'));
+  expect(r.ok).toBe(true);
+  expect(await page.locator('#out .docmap__num').allTextContents()).toEqual(['1~3', '4', '5', '6']);
+  await expect(page.locator('#out .docmap__file')).toHaveCount(11);
+  await expect(page.locator('#out .docmap__file.is-key')).toHaveCount(1);
+  await expect(page.locator('#out .docmap__file.is-key')).toContainText('DESIGN.md');
+  await expect(page.locator('#out .docmap__file.is-key .docmap__tag')).toHaveText('디자인 기준');
+  await expect(page.locator('#out .docmap')).toHaveAttribute('aria-hidden', 'true');
+  // 칸 머리 이름은 같은 문서의 단계 제목에서 온다
+  await expect(page.locator('#out .docmap__head').nth(1)).toContainText('디자인 방향 고정');
+});
+
+test('doc map returns null without its table', async ({ page }) => {
+  const r = await build(page, '# T\n\n## 2. 문서 지도 — 어떤 파일이 무엇의 기준인가\n\n표 없음.\n', 'final', item('doc-map'));
+  expect(r.ok).toBe(false);
+});
