@@ -22,7 +22,8 @@ test.describe('motion allowed', () => {
 
   test('a block below the fold appears once it scrolls in, and stays', async ({ page }) => {
     await openPage(page, '/#/final');
-    const block = page.locator('#doc > *').nth(30); // 1280×800에서 첫 화면 아래
+    // 그려지는 블록만 센다(hr처럼 높이 0인 요소는 모션 대상이 아니다). 1280×800에서 첫 화면 아래
+    const block = page.locator('#doc > *').filter({ visible: true }).nth(30);
     await expect(block).toHaveCSS('opacity', '0');
     await block.evaluate((el) => el.scrollIntoView({ block: 'center', behavior: 'instant' }));
     await expect(block).toHaveCSS('opacity', '1', { timeout: 2000 });
