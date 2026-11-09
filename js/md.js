@@ -158,6 +158,8 @@ const BOX = /[─│┌└┐┘├┤▶◀]/;
 
 function shapeCodeBlocks(root) {
   root.querySelectorAll('pre > code').forEach((code) => {
+    // marked가 붙인 끝 줄바꿈을 지워 복사한 글이 md 코드 블록과 같게 한다(화면 높이는 그대로).
+    code.textContent = code.textContent.replace(/\n$/, '');
     const pre = code.parentElement;
     const lang = (code.className.match(/language-(\S+)/) || [])[1] ?? '';
     if (BOX.test(code.textContent)) {
