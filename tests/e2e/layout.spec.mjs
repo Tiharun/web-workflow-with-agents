@@ -46,6 +46,54 @@ test('body blocks below the fold skip layout', async ({ page }) => {
   expect(await cv('#doc > :nth-child(2)')).toBe('visible'); // 첫 화면 블록은 처음부터 그린다
 });
 
+// content-visibility의 paint 격리는 블록 밖으로 나온 장식(통과 조건 상자의 테이프 등)을 자른다.
+// 블록 종류마다 하나씩, 블록 바깥 12px 띠의 픽셀을 격리를 푼 상태와 비교한다(안쪽 글자의 1px 미만 어긋남은 보지 않는다).
+test('content-visibility does not clip decorations outside body blocks', async ({ page }) => {
+  await openPage(page, '/#/final');
+  const kinds = await page.locator('#doc > *').evaluateAll((els) => {
+    const seen = new Set();
+    return els.map((el, i) => [el, i]).filter(([el]) => {
+      if (getComputedStyle(el).contentVisibility !== 'auto') return false;
+      const k = `${el.tagName}.${el.className}`;
+      if (seen.has(k)) return false;
+      seen.add(k); return true;
+    }).map(([el, i]) => ({ i, k: `${el.tagName}.${el.className}` }));
+  });
+  const clipped = [];
+  for (const { i, k } of kinds) {
+    const el = page.locator('#doc > *').nth(i);
+    await el.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+    await page.waitForTimeout(80);
+    const box = await el.boundingBox();
+    const m = 12;
+    const clip = { x: Math.max(0, box.x - m), y: Math.max(0, box.y - m), width: box.width + 2 * m, height: box.height + 2 * m };
+    const a = (await page.screenshot({ clip })).toString('base64');
+    await el.evaluate((e) => { e.style.contentVisibility = 'visible'; });
+    await page.waitForTimeout(80);
+    const b = (await page.screenshot({ clip })).toString('base64');
+    await el.evaluate((e) => { e.style.contentVisibility = ''; });
+    const diff = await page.evaluate(async ({ a, b, inner }) => {
+      const read = async (png) => {
+        const img = new Image(); img.src = `data:image/png;base64,${png}`; await img.decode();
+        const cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height;
+        const ctx = cv.getContext('2d', { willReadFrequently: true }); ctx.drawImage(img, 0, 0);
+        return { d: ctx.getImageData(0, 0, img.width, img.height).data, w: img.width, h: img.height };
+      };
+      const [p, q] = [await read(a), await read(b)];
+      let n = 0;
+      for (let y = 0; y < p.h; y++) for (let x = 0; x < p.w; x++) {
+        if (x >= inner.x && x < inner.x + inner.w && y >= inner.y && y < inner.y + inner.h) continue;
+        const o = (y * p.w + x) * 4;
+        if (Math.abs(p.d[o] - q.d[o]) + Math.abs(p.d[o + 1] - q.d[o + 1]) + Math.abs(p.d[o + 2] - q.d[o + 2]) > 24) n++;
+      }
+      return n;
+    }, { a, b, inner: { x: box.x - clip.x, y: box.y - clip.y, w: box.width, h: box.height } });
+    if (diff > 4) clipped.push(`${k} ${diff}px`);
+  }
+  expect(kinds.length).toBeGreaterThan(3);
+  expect(clipped).toEqual([]);
+});
+
 // 그리지 않은 블록이 추정 높이(10rem)로 남으면 문서 길이가 실제와 달라 맨 끝으로 한 번에 가지 못한다(측정: final 28% 과대).
 for (const width of [375, 1280]) {
   test.describe(`${width}px sizes`, () => {
@@ -62,6 +110,23 @@ for (const width of [375, 1280]) {
         return [a, h()];
       });
       expect(Math.abs(before - after)).toBeLessThanOrEqual(2);
+    });
+
+    // 웹폰트가 늦게 오면 대체 글꼴로 잰 높이가 남는다(리뷰 측정: 375px에서 10블록, 합계 300px). 글꼴이 오면 다시 잰다.
+    test('unrendered body blocks hold their real height after late web fonts', async ({ page }) => {
+      await page.route('**/*.woff2', async (route) => { await new Promise((ok) => setTimeout(ok, 1500)); await route.continue(); });
+      await openPage(page, '/#/final');
+      const gap = () => page.evaluate(() => {
+        const h = () => document.documentElement.scrollHeight;
+        const a = h();
+        const cv = [...document.querySelectorAll('#doc > *')].filter((el) => getComputedStyle(el).contentVisibility === 'auto');
+        for (const el of cv) Object.assign(el.style, { contentVisibility: 'visible', contain: 'layout style paint' });
+        const b = h();
+        for (const el of cv) { el.style.removeProperty('content-visibility'); el.style.removeProperty('contain'); }
+        return Math.abs(a - b);
+      });
+      await page.evaluate(() => document.fonts.ready);
+      await expect.poll(gap, { timeout: 8000 }).toBeLessThanOrEqual(2);
     });
   });
 }

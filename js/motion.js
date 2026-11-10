@@ -36,7 +36,8 @@ export function reveal(root, selector = ':scope > *') {
   loadMotion().then((g) => {
     if (!g || cancelled || !root.isConnected) return;
     const all = [...root.querySelectorAll(selector)];
-    const blocks = all.filter((el) => el.getBoundingClientRect().top > innerHeight * 0.92);
+    // GSAP는 늦게 올 수 있다. 그 사이 이미 보인 글(화면 맨 아래 띠 포함)은 숨기지 않고, 화면 밖 블록만 숨긴다.
+    const blocks = all.filter((el) => el.getBoundingClientRect().top >= innerHeight);
     if (!blocks.length) return;
     const hidden = new Set(blocks);
     const order = new Map(all.map((el, i) => [el, i]));

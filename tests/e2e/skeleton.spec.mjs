@@ -70,3 +70,26 @@ test('a failure while drawing the cached ruler hides its slot instead of breakin
   await expect(page.locator('.entry__grid > li')).toHaveCount(3); // 나머지 홈은 그대로
   expect(errors).toEqual([]);
 });
+
+// 첫 화면 글꼴을 기다리는 동안(최대 1초) 본문은 숨지만 스켈레톤은 남아 빈 화면이 되지 않는다.
+test('the skeleton stays on screen while the first screen waits for web fonts', async ({ page }) => {
+  await page.route('**/*.woff2', async (route) => { await new Promise((ok) => setTimeout(ok, 800)); await route.continue(); });
+  await page.addInitScript(() => {
+    window.__blank = 0; window.__waited = 0;
+    const tick = () => {
+      const doc = document.querySelector('#doc[data-font-wait]');
+      if (doc) {
+        window.__waited++;
+        if (!doc.querySelector('.skeleton')?.checkVisibility({ visibilityProperty: true })) window.__blank++;
+      }
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  await page.goto('/#/final');
+  await page.locator('#doc[data-loaded]').waitFor();
+  await expect(page.locator('#doc .skeleton')).toHaveCount(0);
+  const { waited, blank } = await page.evaluate(() => ({ waited: window.__waited, blank: window.__blank }));
+  expect(waited).toBeGreaterThan(0); // 글꼴 대기가 실제로 있었다
+  expect(blank).toBe(0);
+});

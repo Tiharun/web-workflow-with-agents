@@ -32,7 +32,7 @@
 
 ## 수동 검사 (측정)
 
-- 전체 테스트 `npm test`: 단위 40, DOM 45, e2e 364 통과(3.1분)
+- 전체 테스트 `npm test`: 단위 40, DOM 45, e2e 370 통과(3.3분, 최종 리뷰 수정 포함)
 - 시각 `npm run test:visual`: 96 통과
 - sloplint(CSS 3개 + index.html): 0 FAIL, 7 WARN(출발점 8)
 - `impeccable detect`: advisory 4(출발점과 같음) + warning 1(`:hover` #a8c8ff on #6ea8fe). 이 경고는 정적 분석의 오탐이다. 실제 브라우저에서 모든 링크·버튼을 hover한 뒤 대비를 재면 4.5:1 미만은 없다. `.btn--primary:hover`가 `a:hover`보다 우선한다
