@@ -23,8 +23,26 @@
   <script>document.documentElement.classList.add('js');try{var m=localStorage.getItem('mode');if(m==='dark'||m==='light')document.documentElement.dataset.mode=m}catch(e){}</script>
   <link rel="preload" href="vendor/fonts/inter/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/site.css">
+  <!-- main.js의 정적 import 그래프 전체(사슬을 평평하게 해 첫 그림을 앞당긴다). 목록은 tests/unit/html-head.test.mjs가 그래프와 맞춘다. -->
+  <link rel="modulepreload" href="js/site-config.js">
+  <link rel="modulepreload" href="js/router.js">
+  <link rel="modulepreload" href="js/header.js">
+  <link rel="modulepreload" href="js/md.js">
+  <link rel="modulepreload" href="js/icons.js">
+  <link rel="modulepreload" href="js/footer.js">
+  <link rel="modulepreload" href="js/tooltip.js">
+  <link rel="modulepreload" href="js/home.js">
+  <link rel="modulepreload" href="js/scroll.js">
+  <link rel="modulepreload" href="js/guide.js">
   <link rel="modulepreload" href="vendor/marked/marked.esm.js">
+  <link rel="modulepreload" href="js/ruler.js">
+  <link rel="modulepreload" href="js/motion.js">
+  <link rel="modulepreload" href="js/fonts.js">
+  <link rel="modulepreload" href="js/visuals.js">
+  <link rel="modulepreload" href="js/diagrams.js">
   <script type="module" src="js/main.js"></script>
 </head>
 <body>

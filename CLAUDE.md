@@ -6,7 +6,7 @@
 ## 스택
 - 바닐라 HTML·CSS·ES 모듈, 빌드 없음, 해시 라우터(`#/`, `#/<가이드 id>`, `#/<가이드 id>/<제목 id>`)
 - 라이브러리는 `vendor/`에 내려받아 둔다(GSAP 3.15.0, marked 등). CDN·npm 의존 없음
-- 진입점 `index.html` → `css/site.css`(tokens·base 포함), `js/main.js`
+- 진입점 `index.html` → `css/tokens.css`·`css/base.css`·`css/site.css`(이 순서로 `<link>`, `@import` 없음), `js/main.js`
 
 ## 명령
 - 실행: `python -m http.server 8000 --bind 127.0.0.1` → http://127.0.0.1:8000 (`.claude/launch.json`의 `static`)
@@ -15,9 +15,11 @@
 - 테스트:
   - `npm test` — 단위(node:test) + DOM(Playwright, `tests/dom`) + e2e(Playwright). 테스트 서버는 `tests/serve.py`가 8123 포트로 자동 실행
   - `npm run test:visual` — 시각 기준 대조(375·768·1280·1440 × 라이트·다크, Windows 기준 이미지). 갱신: `npm run test:visual -- --update-snapshots=all`(그냥 `--update-snapshots`는 허용 오차 안의 이미지를 다시 쓰지 않는다)
-  - 슬롭 검사: `node ~/.claude/skills/hallmark/scripts/sloplint.mjs css/site.css index.html --genre modern-minimal --scope app`
+  - 슬롭 검사: `node ~/.claude/skills/hallmark/scripts/sloplint.mjs css/tokens.css css/base.css css/site.css index.html --genre modern-minimal --scope app`
   - 디자인 검사: `impeccable detect --json <파일>`
-  - 브라우저: 콘솔 오류 0, Lighthouse 성능·접근성 90 이상(chrome-devtools-mcp)
+  - 접근성: `npm test`에 axe WCAG 2.2 AA·키보드·24px·확대 검사가 들어 있다(`tests/e2e/a11y.spec.mjs`·`keyboard.spec.mjs`)
+  - Lighthouse: `npm run lighthouse`(배포본, 모바일·데스크톱) · 배포 전에는 `npm run lighthouse -- --local`
+  - 브라우저: 콘솔 오류 0(chrome-devtools-mcp), Lighthouse 성능·접근성 90 이상
 
 ## 문서 지도
 - `docs/brief.md` — 목적·기능·세부 규칙·완료 기준. 결정이 바뀌면 여기부터 고친다

@@ -50,7 +50,8 @@
       },
       "gsap": {
         "version": "3.15.0",
-        "reveal": { "filter": "top > innerHeight * 0.92", "from": { "opacity": 0, "y": 28 }, "to": { "duration": 0.9, "ease": "expo.out", "stagger": 0.08 }, "trigger": { "start": "top 92%", "once": true } },
+        "load": "dynamic import when motion is allowed; reduced motion never downloads it",
+        "reveal": { "filter": "top >= innerHeight", "from": { "opacity": 0, "y": 28, "overflowAnchor": "none" }, "to": { "duration": 0.9, "ease": "expo.out", "stagger": "min(0.08, 0.24 / (n - 1))" }, "trigger": { "observer": "IntersectionObserver", "rootMargin": "0px 0px -8% 0px", "once": true } },
         "drawRuler": [
           { "target": "--draw", "from": 0, "to": 1, "duration": 1.1, "ease": "power3.inOut", "at": 0 },
           { "target": "--tick", "from": 0, "to": 1, "duration": 0.6, "stagger": 0.06, "ease": "expo.out", "at": 0.25 },

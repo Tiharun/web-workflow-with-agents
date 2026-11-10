@@ -5,7 +5,7 @@ CDN 대신 저장소에 고정해 넣은 라이브러리([ADR 0003](../docs/adr/
 | 라이브러리 | 버전 | 출시일 | 라이선스 | 넣은 파일 (npm 패키지 안 경로) |
 |---|---|---|---|---|
 | marked | 18.1.1 | 2026-10-12 | MIT (`marked/LICENSE`) | `lib/marked.esm.js` |
-| gsap | 3.15.0 | 2026-04-13 | [Standard 'no charge' license](https://gsap.com/standard-license) | `index.js`, `gsap-core.js`, `CSSPlugin.js`, `ScrollTrigger.js`, `Observer.js`(ScrollTrigger 의존), `ScrollToPlugin.js` |
+| gsap | 3.15.0 | 2026-04-13 | [Standard 'no charge' license](https://gsap.com/standard-license) | `index.js`, `gsap-core.js`, `CSSPlugin.js`, `ScrollToPlugin.js`(쓰지 않음). ScrollTrigger·Observer는 M7에서 IntersectionObserver로 바꾸며 뺐다 |
 
 | Inter Variable | 5.3.0 (`@fontsource-variable/inter`) | — | OFL 1.1 (`fonts/inter/LICENSE`) | `files/inter-latin-wght-normal.woff2`, `files/inter-latin-ext-wght-normal.woff2` |
 | Pretendard Variable | 1.3.9 (`pretendard`) | — | OFL 1.1 (`fonts/pretendard/LICENSE.txt`) | `dist/web/variable/pretendardvariable-dynamic-subset.css`, `dist/web/variable/woff2-dynamic-subset/` |
@@ -18,9 +18,6 @@ three는 "필요 시"이므로 4단계에서 쓰기로 정하면 추가한다.
 
 ```js
 import { marked } from '../vendor/marked/marked.esm.js';
-import { gsap } from '../vendor/gsap/index.js';
-import { ScrollTrigger } from '../vendor/gsap/ScrollTrigger.js';
-import { ScrollToPlugin } from '../vendor/gsap/ScrollToPlugin.js';
-
-gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
+// GSAP는 첫 화면을 막지 않도록 정적 import하지 않는다. js/motion.js의 loadMotion()이 필요할 때 한 번 받는다.
+const { gsap } = await import('../vendor/gsap/index.js');
 ```

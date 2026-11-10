@@ -6,6 +6,7 @@ import { icon } from './icons.js';
 import { escapeHtml } from './header.js';
 import { motionOK, scrollToTarget, focusEl } from './scroll.js';
 import { reveal } from './motion.js';
+import { fontsFor } from './fonts.js';
 
 const { ui, site } = siteConfig;
 
@@ -51,11 +52,23 @@ export async function renderGuide(main, guide, stageId, { smooth = false, focusT
     if (!main.contains(article)) return () => {};
   }
 
+  const skel = article.querySelector('.skeleton');
   article.replaceChildren(doc.template.content.cloneNode(true));
+  placeVisuals(article, guide, doc);
+  const first = drawFirstScreen(article);
+  if (!cached) {
+    // 첫 화면 글의 웹폰트가 오기 전에는 숨겨 둔다(자리는 잡혀 있다). 대체 글꼴로 그렸다가 바뀌면 줄 수가 달라져 아래가 밀린다.
+    // 그동안 스켈레톤을 본문 위에 겹쳐 두어 빈 화면이 되지 않게 한다(첫 화면 블록을 고른 뒤에 넣어 계산에 끼지 않는다).
+    article.dataset.fontWait = '';
+    if (skel) article.append(skel);
+    await fontsFor(first.map((el) => el.textContent).join(' '));
+    if (!main.contains(article)) return () => {};
+    delete article.dataset.fontWait;
+    skel?.remove();
+  }
   article.removeAttribute('aria-busy');
   article.dataset.loaded = ''; // 본문을 다 그렸다는 표시. 오류 상태에는 붙이지 않는다(라우터가 같은 가이드인지 볼 때 쓴다).
   document.title = `${doc.title} | ${site.name}`;
-  placeVisuals(article, guide, doc);
   buildToc(main, guide, doc);
 
   // 새로 그린 가이드의 맨 위는 늘 즉시 보인다(부드러운 이동은 단계로 갈 때만).
@@ -63,7 +76,8 @@ export async function renderGuide(main, guide, stageId, { smooth = false, focusT
 
   const offProgress = trackScroll(main, article, doc);
   const offReveal = reveal(article);
-  return () => { offProgress(); offReveal(); main.querySelector('#toc')?.close(); };
+  const offSizes = sizeBlocks(article);
+  return () => { offProgress(); offReveal(); offSizes(); main.querySelector('#toc')?.close(); };
 }
 
 /**
@@ -177,6 +191,60 @@ function buildToc(main, guide, doc) {
     if (chosenId) focusEl(main.querySelector('#doc').querySelector(`#${CSS.escape(chosenId)}`));
     chosenId = null;
   });
+}
+
+/**
+ * 첫 화면(문서 맨 위에서 한 화면)에 걸친 본문 블록은 바로 그린다(content-visibility를 끈다).
+ * 추정 높이로 먼저 그려졌다가 실제 높이로 바뀌면 아래 제목이 밀린다(측정: final 108px, steps 330px).
+ * 블록마다 그 블록만 레이아웃하므로 첫 화면만큼의 비용이다. @returns {Element[]} 첫 화면 블록
+ */
+function drawFirstScreen(article) {
+  const first = [];
+  for (const el of article.children) {
+    if (el.getBoundingClientRect().top + scrollY >= innerHeight) break;
+    if (getComputedStyle(el).contentVisibility === 'auto') el.style.contentVisibility = 'visible';
+    first.push(el);
+  }
+  return first;
+}
+
+/**
+ * 화면 밖 본문 블록(content-visibility: auto, site.css)의 실제 높이를 쉬는 틈에 조금씩 재서 자리 높이로 둔다.
+ * 추정 높이(10rem)로 남으면 문서 길이가 실제와 달라(측정: final 28% 과대) 맨 끝으로 한 번에 가지 못하고
+ * 진행 막대·현재 위치가 어긋난다. 한 조각은 8ms 안팎이라 긴 작업을 만들지 않는다. 다 재면 data-sized를 붙인다.
+ * 본문 폭이 바뀌거나(회전·창 크기) 웹폰트 하위 집합이 새로 오면(대체 글꼴로 잰 높이가 남는다) 처음부터 다시 잰다.
+ */
+function sizeBlocks(article) {
+  const blocks = [...article.children].filter((el) => getComputedStyle(el).contentVisibility === 'auto');
+  let i = 0, timer = 0, width = 0;
+  const step = () => {
+    const t0 = performance.now();
+    while (i < blocks.length && performance.now() - t0 < 8) {
+      const el = blocks[i++];
+      // 이 블록만 잠시 그려 실제 높이를 읽는다. 격리(contain)는 그대로 둬야 자식 여백이 밖으로 겹치지 않아 화면과 같은 높이다.
+      el.style.contentVisibility = 'visible';
+      el.style.contain = 'layout style paint';
+      // contain-intrinsic-size는 내용 상자 크기다. 안쪽 여백·테두리를 빼야 두 번 더해지지 않는다.
+      const cs = getComputedStyle(el);
+      const extra = ['paddingTop', 'paddingBottom', 'borderTopWidth', 'borderBottomWidth'].reduce((sum, k) => sum + parseFloat(cs[k]), 0);
+      // auto를 붙이지 않는다. auto면 한 번 그려진 높이(대체 글꼴로 그렸을 수 있다)가 잰 값보다 앞선다(측정: 375px final 37px).
+      el.style.containIntrinsicBlockSize = `${el.getBoundingClientRect().height - extra}px`;
+      el.style.removeProperty('content-visibility');
+      el.style.removeProperty('contain');
+    }
+    if (i < blocks.length) timer = setTimeout(step);
+    else article.dataset.sized = '';
+  };
+  const restart = () => { clearTimeout(timer); i = 0; timer = setTimeout(step); };
+  const ro = new ResizeObserver(([entry]) => {
+    const w = entry.contentRect.width;
+    if (w === width) return;
+    width = w;
+    restart();
+  });
+  ro.observe(article);
+  document.fonts?.addEventListener('loadingdone', restart);
+  return () => { ro.disconnect(); document.fonts?.removeEventListener('loadingdone', restart); clearTimeout(timer); };
 }
 
 /** 진행 막대 + 현재 읽는 제목(목차 강조). 제목 위치는 크기가 바뀔 때만 다시 잰다. */

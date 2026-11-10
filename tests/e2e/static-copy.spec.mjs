@@ -36,7 +36,7 @@ test('404.html static copy matches siteConfig', async ({ page }) => {
   await expect(page.locator('[data-home]')).toHaveCount(2);
   for (const a of await page.locator('[data-home]').all()) await expect(a).toHaveAttribute('href', site.url);
   const css = await page.locator('noscript').first().evaluate((n) => [...n.innerHTML.matchAll(/href="([^"]+)"/g)].map((m) => m[1]));
-  expect(css).toEqual([`${site.url}vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css`, `${site.url}css/site.css`]);
+  expect(css).toEqual([`${site.url}vendor/fonts/pretendard/pretendardvariable-dynamic-subset.css`, `${site.url}css/tokens.css`, `${site.url}css/base.css`, `${site.url}css/site.css`]);
   await expect(page).toHaveTitle(`${ui.pageNotFoundDocTitle} | ${site.name}`);
   await expect(page.locator('.site-header .brand')).toHaveText(site.name);
   const box = page.locator('main .state');

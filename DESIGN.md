@@ -377,8 +377,14 @@ md 제목 바로 아래 `.visual` 틀 안에 붙는 그림이다. 단계 자의 
 ### Motion
 - **토큰:** `ease-out` = `cubic-bezier(0.16, 1, 0.3, 1)`, `ease-in` = `cubic-bezier(0.7, 0, 0.84, 0)`, `ease-in-out` = `cubic-bezier(0.65, 0, 0.35, 1)`. 시간은 micro 120ms, short 220ms, long 420ms.
 - **쓰임:** 색 변화는 120ms, 들림·회전·패널은 220ms. 목차 드로어는 420ms `ease-out`으로 열리고 220ms `ease-in-out`으로 닫힌다. 로딩 뼈대는 1.4초 맥박.
-- **스크롤 등장(GSAP ScrollTrigger):** 화면 아래에 있는 블록만 28px 아래에서 올라오며 나타난다(0.9초, `expo.out`, 0.08초 간격, 한 번만).
+- **스크롤 등장(IntersectionObserver + GSAP):** 화면 아래에 있는 블록만 28px 아래에서 올라오며 나타난다(0.9초, `expo.out`, 0.08초 간격, 한 번만).
 - **원칙:** `transform`과 `opacity`만 움직인다. `prefers-reduced-motion: reduce`이면 모든 애니메이션·전환이 0.01ms가 된다.
+
+### Performance (긴 본문)
+- **지연 레이아웃:** 본문 블록(`.doc > :not(h1~h4, hr, .pass)`)은 `content-visibility: auto`. 블록 밖으로 나온 장식이 있는 블록(`.pass` 테이프)은 격리하면 잘리므로 늘 그린다. 첫 화면에 걸친 블록은 바로 그리고(`drawFirstScreen`), 나머지는 쉬는 틈에 실제 높이를 재 둔다(`sizeBlocks`). 제목은 이동·현재 위치 기준이라 늘 그린다.
+- **초점 테두리:** 이 블록들은 paint 격리로 테두리를 자르므로 `overflow-clip-margin: 4px`(테두리 2px + 간격 2px)로 비켜 준다. 지원하지 않는 브라우저는 테두리를 안쪽(`outline-offset: -2px`)에 그린다.
+- **글꼴과 밀림:** 첫 화면 글은 그 글자의 웹폰트 하위 집합이 온 뒤 보인다(`fontsFor`, 최대 1초). 자리는 먼저 잡아 아래가 움직이지 않는다.
+- **모션:** GSAP는 첫 화면을 막지 않도록 필요할 때 받는다. 숨은·올라오는 블록은 스크롤 앵커에서 뺀다(`overflow-anchor: none`).
 
 ## Do's and Don'ts
 

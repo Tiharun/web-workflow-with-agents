@@ -7,7 +7,7 @@ import { initTooltips } from './tooltip.js';
 import { renderHome } from './home.js';
 import { renderGuide, scrollToStage } from './guide.js';
 import { focusEl } from './scroll.js';
-import { loadGuide } from './md.js';
+import { prefetchGuide } from './md.js';
 import { icon } from './icons.js';
 
 const { ui, site, guides } = siteConfig;
@@ -44,7 +44,10 @@ async function route({ focusTop: focusAsked = false } = {}) {
   document.documentElement.dataset.view = next.name;
 
   if (next.name === 'home') {
-    cleanup = renderHome(main);
+    const token = view;
+    const done = await renderHome(main);
+    if (view !== token) { done(); return; } // 기다리는 동안 다른 화면으로 갔다
+    cleanup = done;
     scrollTo({ top: 0, behavior: 'instant' });
     if (focusTop) focusEl(main.querySelector('h1'));
   } else if (next.name === 'guide') {
@@ -133,5 +136,5 @@ function fallbackCopy(text) {
 addEventListener('hashchange', route);
 route();
 
-// 첫 화면 뒤 한가할 때 나머지 md를 미리 받아 둔다(메가메뉴가 바로 열리게).
-(window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1200)))(() => guides.forEach((g) => loadGuide(g).catch(() => {})));
+// 첫 화면 뒤 한가할 때 나머지 md 원문을 미리 받아 둔다(메가메뉴가 망을 기다리지 않게). 변환은 열 때 한다.
+(window.requestIdleCallback ?? ((fn) => setTimeout(fn, 1200)))(() => guides.forEach(prefetchGuide));
