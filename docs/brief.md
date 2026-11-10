@@ -135,7 +135,7 @@ md 제목에서 자동 생성: 단계·세부 항목 `{ id: string, title: strin
 | 방식 | 정적 사이트, 서버·DB 없음 | — |
 | 프레임워크 | 없음. HTML·CSS·JS(ES 모듈), 빌드 없음 | [ADR 0003](adr/0003-no-framework-vendored-libs.md) |
 | 콘텐츠 | md 원본을 브라우저에서 불러와 렌더 | [ADR 0001](adr/0001-md-runtime-render.md) |
-| 라이브러리 | marked(MIT), GSAP(무료 표준 라이선스: ScrollTrigger·ScrollToPlugin), 필요 시 three(MIT). `vendor/`에 출시 2주 이상 지난 안정판으로 고정. DOMPurify 없음 | [ADR 0003](adr/0003-no-framework-vendored-libs.md) |
+| 라이브러리 | marked(MIT), GSAP(무료 표준 라이선스: core만, 필요할 때 받음. 스크롤 등장은 IntersectionObserver), 필요 시 three(MIT). `vendor/`에 출시 2주 이상 지난 안정판으로 고정. DOMPurify 없음 | [ADR 0003](adr/0003-no-framework-vendored-libs.md) |
 | 호스팅 | GitHub Pages, `main` 브랜치 루트 배포, `.nojekyll`, 상대 경로, 해시 주소 | [ADR 0002](adr/0002-github-pages-hash-routing.md) |
 | 배포 | `main` push → 자동 배포. Pages 켜기는 사용자가 직접(Settings → Pages → Deploy from a branch → `main` / root) | [GitHub Docs](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site) |
 | 로컬 확인 | `python -m http.server` (`file://`로 열면 md 불러오기가 막힌다) | [MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS/Errors/CORSRequestNotHTTP) |

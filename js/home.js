@@ -4,7 +4,7 @@ import { siteConfig, guideById } from './site-config.js';
 import { loadGuide, readyDoc } from './md.js';
 import { buildRuler } from './ruler.js';
 import { icon } from './icons.js';
-import { reveal, drawRuler } from './motion.js';
+import { reveal, drawRuler, loadMotion } from './motion.js';
 
 const { site, home, guides, ui } = siteConfig;
 
@@ -39,7 +39,8 @@ export function renderHome(main) {
   // 그리다 실패하면 칸만 숨긴다(캐시 경로도 같은 처리, 화면 전환은 계속된다).
   const show = (doc) => { try { showRuler(slot, doc); } catch { slot.hidden = true; } };
   if (cached) show(cached);
-  else loadGuide(rulerGuide).then(show, () => { slot.hidden = true; });
+  // 처음이면 GSAP도 함께 기다려 단계 자를 연출과 함께 붙인다(loadMotion은 거부하지 않으므로 실패는 md만이다).
+  else Promise.all([loadGuide(rulerGuide), loadMotion()]).then(([doc]) => show(doc), () => { slot.hidden = true; });
 
   return reveal(main.querySelector('.home'), '.hero__visual, .entry__grid > li');
 }

@@ -377,7 +377,7 @@ md 제목 바로 아래 `.visual` 틀 안에 붙는 그림이다. 단계 자의 
 ### Motion
 - **토큰:** `ease-out` = `cubic-bezier(0.16, 1, 0.3, 1)`, `ease-in` = `cubic-bezier(0.7, 0, 0.84, 0)`, `ease-in-out` = `cubic-bezier(0.65, 0, 0.35, 1)`. 시간은 micro 120ms, short 220ms, long 420ms.
 - **쓰임:** 색 변화는 120ms, 들림·회전·패널은 220ms. 목차 드로어는 420ms `ease-out`으로 열리고 220ms `ease-in-out`으로 닫힌다. 로딩 뼈대는 1.4초 맥박.
-- **스크롤 등장(GSAP ScrollTrigger):** 화면 아래에 있는 블록만 28px 아래에서 올라오며 나타난다(0.9초, `expo.out`, 0.08초 간격, 한 번만).
+- **스크롤 등장(IntersectionObserver + GSAP):** 화면 아래에 있는 블록만 28px 아래에서 올라오며 나타난다(0.9초, `expo.out`, 0.08초 간격, 한 번만).
 - **원칙:** `transform`과 `opacity`만 움직인다. `prefers-reduced-motion: reduce`이면 모든 애니메이션·전환이 0.01ms가 된다.
 
 ## Do's and Don'ts
