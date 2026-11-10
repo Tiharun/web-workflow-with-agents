@@ -348,13 +348,13 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 
 ```text
 CLAUDE.md를 먼저 읽어 줘.
-/superpowers:subagent-driven-development docs/superpowers/plans/<날짜>-m0-skeleton.md
+/superpowers:executing-plans docs/superpowers/plans/<날짜>-m0-skeleton.md
 - 공통 레이아웃·공용 컴포넌트는 DESIGN.md 기준, 홈과 같은 품질로
 - 계정 로그인·저장소 연결처럼 내 계정이 필요한 일은 멈추고 절차를 알려 줘
 - 끝나면 배포 URL, 전 페이지 375/1280 스크린샷, 테스트 출력을 보여 줘
 ```
 
-(Native를 골랐다면 `/superpowers:executing-plans`.) 직접 확인한 뒤 병합합니다. merge·PR·유지·폐기 중에서 고르고, push는 직접 승인합니다.
+(Subagent를 골랐다면 `/superpowers:subagent-driven-development`.) 직접 확인한 뒤 병합합니다. merge·PR·유지·폐기 중에서 고르고, push는 직접 승인합니다.
 
 ```text
 /superpowers:finishing-a-development-branch
