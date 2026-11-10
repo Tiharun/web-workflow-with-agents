@@ -28,3 +28,10 @@ playwright-report/
 # 디자인 도구 캐시·스크린샷(다시 만들 수 있음)
 .hallmark/shots/
 .impeccable/hook.cache.json
+
+# 끝난 작업 기록(로컬에만 둔다, 사이트·이후 작업에 필요 없음)
+docs/plans/
+docs/reports/
+design-system/
+.hallmark/
+.superpowers/
