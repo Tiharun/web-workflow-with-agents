@@ -87,7 +87,7 @@ location.hash ─ router.parse ─ { home | guide+stageId | notfound } ─ main.
 - **서버**: Playwright `webServer`가 `python -m http.server 8000 --bind 127.0.0.1`을 띄운다(이미 떠 있으면 재사용).
 - **안정화**: 시각 테스트는 `reducedMotion: 'reduce'`로 실행한다. Playwright는 CSS 애니메이션만 끄고 GSAP(JS) 모션은 끄지 못하기 때문이다. 다크 모드는 `colorScheme: 'dark'`로 만든다. 브라우저는 Chromium 하나만 쓴다.
 - **기준 이미지**: win32 한 벌을 `tests/visual/*-snapshots/`에 커밋한다. md 문장이 바뀌면 기준 이미지가 깨지는 것은 의도된 동작이다. 확인한 뒤 갱신한다.
-- **수동 검사**(CLAUDE.md): 슬롭 검사(sloplint), `impeccable detect`, Lighthouse(chrome-devtools-mcp)는 마일스톤을 마무리할 때와 M7에서 돌리고, 그 출력을 보고에 붙인다.
+- **수동 검사**(CLAUDE.md): 슬롭 검사(sloplint), `impeccable detect`, Lighthouse(`npm run lighthouse`, CLI)는 마일스톤을 마무리할 때와 M7에서 돌리고, 그 출력을 보고에 붙인다. Lighthouse는 CLI로 잰다(여러 번 돌려 중앙값을 내고 결과를 파일로 남길 수 있다).
 - 각 마일스톤은 해당 기능의 테스트를 먼저 쓰고(실패 확인) 고친 뒤 통과시킨다. 시제품이 이미 맞게 동작하는 부분은 테스트가 처음부터 통과해도 된다.
 
 ## 7. 작업 흐름
