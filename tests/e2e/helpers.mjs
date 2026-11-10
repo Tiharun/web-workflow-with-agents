@@ -17,7 +17,8 @@ export const pages = [
 export async function openPage(page, path) {
   await page.goto(path);
   await page.evaluate(() => document.fonts.ready);
-  if (/^\/#\/(final|steps|design)/.test(path)) await page.locator('.doc:not([aria-busy])').waitFor();
+  // 본문 블록의 실제 높이를 다 재 두면(data-sized) 문서 길이가 확정된다. 화면 밖 블록은 그 전까지 추정 높이다.
+  if (/^\/#\/(final|steps|design)/.test(path)) await page.locator('.doc[data-sized]').waitFor({ state: 'attached' });
   // 홈 단계 자: md를 받는 동안 스켈레톤이 보인다. 사라지면(성공) 또는 숨겨지면(실패) 다 그려진 것이다.
   if (path === '/#/') await page.locator('.ruler-skeleton').waitFor({ state: 'hidden' });
 }

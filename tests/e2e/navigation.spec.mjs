@@ -424,3 +424,50 @@ test.describe('focus on sticky bars keeps the reading position', () => {
     });
   });
 });
+
+// 아직 그리지 않은 블록(content-visibility 추정 높이)을 건너뛴 뒤에도 현재 위치와 멈춤선이 맞다(계획 M7 Task 6).
+for (const width of [1280, 375]) {
+  test.describe(`${width}px unrendered`, () => {
+    test.use({ viewport: { width, height: 800 } });
+    test('current location stays right after jumping past unrendered blocks', async ({ page }) => {
+      await openPage(page, '/#/final');
+      const ids = await tocIds(page);
+      const viaToc = async (id) => {
+        await page.locator('[data-toc-open]').click();
+        await page.locator(`#toc a[data-toc-id="${id}"]`).click();
+        await expect(page.locator('#toc')).not.toHaveAttribute('open', '');
+        await twoFrames(page);
+      };
+      await viaToc(ids.at(-1));
+      const id = middle(ids);
+      await viaToc(id);
+      await expect(current(page)).toHaveAttribute('data-toc-id', id);
+      const { top, pad } = await page.evaluate((i) => ({
+        top: document.getElementById(i).getBoundingClientRect().top,
+        pad: parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop),
+      }), id);
+      expect(Math.abs(top - pad)).toBeLessThanOrEqual(2);
+    });
+  });
+}
+
+// 쉬는 틈 미리 받기는 원문만 받는다. 변환(긴 가이드는 CPU 4배 감속에서 100ms 넘음)은 메뉴를 열 때 한다(계획 M7 Task 6, 홈 TBT).
+test.describe('idle prefetch', () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+  test('idle prefetch downloads the other guides without parsing them', async ({ page }) => {
+    const mdRequests = [];
+    page.on('request', (r) => { if (r.url().endsWith('.md')) mdRequests.push(r.url()); });
+    await openPage(page, '/#/');
+    await expect.poll(() => mdRequests.length).toBe(siteConfig.guides.length);
+    const parsed = await page.evaluate(async (ids) => {
+      const { readyDoc } = await import('/js/md.js');
+      const { guideById } = await import('/js/site-config.js');
+      return ids.filter((id) => readyDoc(guideById(id)));
+    }, siteConfig.guides.map((g) => g.id));
+    expect(parsed).toEqual([siteConfig.ruler.guideId]); // 단계 자에 쓰는 가이드만 변환했다
+    const other = siteConfig.guides.find((g) => g.id !== siteConfig.ruler.guideId);
+    await page.locator(`.guide-nav__btn[data-guide="${other.id}"]`).click();
+    await expect(page.locator(`#mega-${other.id} a[href^="#/${other.id}/"]`).first()).toBeVisible();
+    expect(mdRequests.length).toBe(siteConfig.guides.length); // 다시 받지 않는다
+  });
+});

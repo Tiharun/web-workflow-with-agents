@@ -6,7 +6,7 @@
 ## 스택
 - 바닐라 HTML·CSS·ES 모듈, 빌드 없음, 해시 라우터(`#/`, `#/<가이드 id>`, `#/<가이드 id>/<제목 id>`)
 - 라이브러리는 `vendor/`에 내려받아 둔다(GSAP 3.15.0, marked 등). CDN·npm 의존 없음
-- 진입점 `index.html` → `css/site.css`(tokens·base 포함), `js/main.js`
+- 진입점 `index.html` → `css/tokens.css`·`css/base.css`·`css/site.css`(이 순서로 `<link>`, `@import` 없음), `js/main.js`
 
 ## 명령
 - 실행: `python -m http.server 8000 --bind 127.0.0.1` → http://127.0.0.1:8000 (`.claude/launch.json`의 `static`)

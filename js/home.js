@@ -5,10 +5,12 @@ import { loadGuide, readyDoc } from './md.js';
 import { buildRuler } from './ruler.js';
 import { icon } from './icons.js';
 import { reveal, drawRuler, loadMotion } from './motion.js';
+import { fontsFor } from './fonts.js';
 
 const { site, home, guides, ui } = siteConfig;
 
-export function renderHome(main) {
+/** @returns {Promise<() => void>} 화면을 떠날 때 부르는 정리 함수 */
+export async function renderHome(main) {
   document.title = site.name;
   const featured = guideById(home.featuredGuideId);
   const others = guides.filter((g) => g !== featured);
@@ -16,7 +18,7 @@ export function renderHome(main) {
   const cached = readyDoc(rulerGuide); // 이미 받았으면 스켈레톤 없이 바로 그린다
 
   main.innerHTML = `
-    <div class="home">
+    <div class="home" data-font-wait>
       <section class="container hero" aria-labelledby="home-title">
         <div class="hero__text">
           <h1 class="hero__title" id="home-title">${site.name}</h1>
@@ -35,6 +37,12 @@ export function renderHome(main) {
       </section>
     </div>`;
 
+  // 자리는 바로 잡고(푸터가 위로 올라왔다 밀리지 않게), 글은 글꼴이 온 뒤 보인다.
+  // 대체 글꼴로 그렸다가 바뀌면 히어로 문장의 줄 수가 달라져 카드가 밀린다(숨은 동안의 이동은 보이지 않는다).
+  const homeEl = main.querySelector('.home');
+  await fontsFor(homeEl.textContent);
+  homeEl.removeAttribute('data-font-wait');
+
   const slot = main.querySelector('[data-hero-visual]');
   // 그리다 실패하면 칸만 숨긴다(캐시 경로도 같은 처리, 화면 전환은 계속된다).
   const show = (doc) => { try { showRuler(slot, doc); } catch { slot.hidden = true; } };
@@ -42,7 +50,7 @@ export function renderHome(main) {
   // 처음이면 GSAP도 함께 기다려 단계 자를 연출과 함께 붙인다(loadMotion은 거부하지 않으므로 실패는 md만이다).
   else Promise.all([loadGuide(rulerGuide), loadMotion()]).then(([doc]) => show(doc), () => { slot.hidden = true; });
 
-  return reveal(main.querySelector('.home'), '.hero__visual, .entry__grid > li');
+  return reveal(homeEl, '.hero__visual, .entry__grid > li');
 }
 
 /** 단계 자를 칸에 넣는다. 단계가 없으면 칸을 숨긴다. */

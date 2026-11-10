@@ -5,7 +5,7 @@
 import { motionOK } from './scroll.js';
 
 // 모션이 끝나면 지우는 인라인 속성(배치용 인라인 style은 남긴다)
-const CLEAR = 'opacity,transform,translate,rotate,scale';
+const CLEAR = 'opacity,transform,translate,rotate,scale,overflowAnchor';
 const inViewport = (el) => {
   const r = el.getBoundingClientRect();
   return r.bottom > 0 && r.top < innerHeight;
@@ -40,7 +40,9 @@ export function reveal(root, selector = ':scope > *') {
     if (!blocks.length) return;
     const hidden = new Set(blocks);
     const order = new Map(all.map((el, i) => [el, i]));
-    const ctx = g.context(() => { g.set(blocks, { opacity: 0, y: 28 }); });
+    // 숨은·올라오는 블록은 스크롤 앵커에서 뺀다. 아니면 브라우저가 이동(y)을 보정하려고 스크롤을 움직인다
+    // (측정: 맨 끝으로 간 직후 7px 되돌아감, content-visibility 블록에서).
+    const ctx = g.context(() => { g.set(blocks, { opacity: 0, y: 28, overflowAnchor: 'none' }); });
     const io = new IntersectionObserver((entries) => {
       const entered = entries.filter((e) => e.isIntersecting && hidden.has(e.target)).map((e) => e.target);
       if (!entered.length) return;

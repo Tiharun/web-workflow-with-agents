@@ -4,17 +4,33 @@ import { siteConfig } from './site-config.js';
 import { icon } from './icons.js';
 
 const { ui } = siteConfig;
+const texts = new Map(); // 받은 원문(변환 전)
 const cache = new Map();
 const ready = new Map(); // 다 만든 문서. 이미 받은 문서는 스켈레톤 없이 바로 그리는 데 쓴다.
+
+/** md 원문을 한 번만 받는다. 실패하면 비워 다시 받을 수 있게 한다. */
+function fetchText(guide) {
+  if (!texts.has(guide.id)) {
+    const job = fetch(guide.file, { cache: 'no-cache' }).then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res.text();
+    });
+    job.catch(() => texts.delete(guide.id));
+    texts.set(guide.id, job);
+  }
+  return texts.get(guide.id);
+}
+
+/**
+ * 원문만 미리 받는다. 변환(긴 가이드는 느린 기기에서 100ms 넘는 긴 작업)은 쓸 때 loadGuide가 한다.
+ * @returns {Promise<void>} 거부하지 않는다
+ */
+export const prefetchGuide = (guide) => fetchText(guide).then(() => {}, () => {});
 
 /** 가이드 md를 한 번만 불러와 가공한다. 실패하면 캐시를 비워 다시 시도할 수 있게 한다. */
 export function loadGuide(guide) {
   if (!cache.has(guide.id)) {
-    const job = fetch(guide.file, { cache: 'no-cache' })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.text();
-      })
+    const job = fetchText(guide)
       .then((text) => {
         const doc = buildDoc(guide, text);
         ready.set(guide.id, doc);

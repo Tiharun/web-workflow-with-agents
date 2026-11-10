@@ -28,10 +28,14 @@ const focusState = (page) => page.evaluate(() => {
   let clippedBy = null;
   for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
     const ps = getComputedStyle(p);
-    const clips = ps.overflowX !== 'visible' || ps.overflowY !== 'visible' || /paint|strict|content/.test(ps.contain) || ps.contentVisibility === 'auto';
+    const paintClip = /paint|strict|content/.test(ps.contain) || ps.contentVisibility === 'auto';
+    const clips = ps.overflowX !== 'visible' || ps.overflowY !== 'visible' || paintClip;
     if (!clips || p === document.body) continue;
+    // overflow-clip-margin은 paint 격리와 overflow: clip에만 적용된다(스크롤 상자에는 아니다).
+    const scrolls = /auto|scroll|hidden/.test(ps.overflowX + ps.overflowY);
+    const m = (paintClip || ps.overflowX === 'clip') && !scrolls ? parseFloat(ps.overflowClipMargin) || 0 : 0;
     const pr = p.getBoundingClientRect();
-    const box = { left: pr.left + p.clientLeft, top: pr.top + p.clientTop, right: pr.left + p.clientLeft + p.clientWidth, bottom: pr.top + p.clientTop + p.clientHeight };
+    const box = { left: pr.left + p.clientLeft - m, top: pr.top + p.clientTop - m, right: pr.left + p.clientLeft + p.clientWidth + m, bottom: pr.top + p.clientTop + p.clientHeight + m };
     if (ring.left < box.left - 0.5 || ring.top < box.top - 0.5 || ring.right > box.right + 0.5 || ring.bottom > box.bottom + 0.5) { clippedBy = `${p.tagName}.${p.className}`; break; }
   }
   const name = `${el.tagName}.${typeof el.className === 'string' ? el.className.split(' ')[0] : ''} "${(el.textContent || el.getAttribute('aria-label') || '').trim().slice(0, 16)}"`;

@@ -13,7 +13,7 @@ const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/cs
 const { icons, ogImage } = siteConfig.site;
 
 /** 아이콘 한 장을 담는 페이지. bg가 없으면 투명 바탕. */
-const iconPage = (size, bg) => `<!doctype html><html data-mode="light"><head><link rel="stylesheet" href="/css/site.css">
+const iconPage = (size, bg) => `<!doctype html><html data-mode="light"><head><link rel="stylesheet" href="/css/tokens.css"><link rel="stylesheet" href="/css/base.css"><link rel="stylesheet" href="/css/site.css">
 <style>html,body{margin:0;min-height:0;width:${size}px;height:${size}px;background:${bg ? 'var(--color-paper)' : 'transparent'}}img{display:block;width:${size}px;height:${size}px}</style>
 </head><body><img src="/${icons.svg}" alt=""></body></html>`;
 

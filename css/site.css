@@ -8,9 +8,7 @@
 /* Hallmark · answered F6 · heads use the user's pinned 39/27/21 over a 17px body, a ratio above the app scale, the user's words win */
 /* Hallmark · answered F4 · one filled primary (.btn--primary, only on the load-error state); .btn and .tool-btn are the neutral keycap and an open nav button is a wash, not a fill */
 /* Hallmark · waive 39b · button.term 27px tall · terms are inline buttons inside running text (WCAG 2.5.8 inline exception); their line box is the target */
-/* Hallmark · answered F11 · blocks reveal once on scroll (GSAP ScrollTrigger, ADR 0003) and the home ruler draws once; nothing is hidden by CSS, so content is visible without scripting and under reduced motion */
-@import url("./tokens.css");
-@import url("./base.css");
+/* Hallmark · answered F11 · blocks reveal once on scroll (IntersectionObserver + GSAP loaded on demand, ADR 0003) and the home ruler draws once; nothing is hidden by CSS, so content is visible without scripting and under reduced motion */
 
 /* Inter Variable 5.3.0 (fontsource, OFL). 한글은 Pretendard Variable 동적 서브셋이 맡는다. */
 @font-face { font-family: "Inter Variable"; font-style: normal; font-display: swap; font-weight: 100 900; src: url("../vendor/fonts/inter/inter-latin-ext-wght-normal.woff2") format("woff2-variations"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
@@ -172,6 +170,15 @@ button { cursor: pointer; color: inherit; }
 /* document flow */
 .doc > * { margin-block: 0; }
 .doc > * + * { margin-top: var(--space-md); }
+/* 긴 가이드는 노드가 1,500개를 넘어 첫 레이아웃이 모바일에서 1초 이상 걸린다(측정). 본문 블록은 화면에 올 때 그린다.
+   10rem은 측정한 블록 평균 높이(88~184px)의 가운데, auto는 한 번 그린 실제 높이를 기억한다. 제목은 이동·현재 위치 기준이라 늘 그린다. */
+/* 첫 화면에 걸친 블록은 js/guide.js(drawFirstScreen)가 바로 그린다. */
+.doc > :not(h1, h2, h3, h4, hr) { content-visibility: auto; contain-intrinsic-size: auto 10rem; overflow-clip-margin: 4px; }
+/* content-visibility는 paint 격리를 걸어 블록 가장자리의 초점 테두리(2px + 간격 2px)를 자른다. 위 clip-margin 4px가 그만큼 비켜 준다.
+   clip-margin이 없는 브라우저(Safari)는 테두리를 안쪽으로 그린다. */
+@supports not (overflow-clip-margin: 4px) {
+  .doc > :not(h1, h2, h3, h4, hr) :focus-visible { outline-offset: -2px; }
+}
 .doc :is(h1, h2, h3, h4):focus { outline: none; }
 .doc h1 { font-size: var(--text-display); }
 .doc h2 { max-width: none; margin-top: var(--space-2xl); padding-top: var(--space-lg); border-top: var(--rule-hair) solid var(--color-rule-2); font-size: var(--text-section); }
@@ -411,6 +418,8 @@ button { cursor: pointer; color: inherit; }
 .paths__note { color: var(--color-ink-2); font-size: var(--text-xs); }
 
 /* ---------- home ---------- */
+/* 첫 화면 글은 웹폰트가 온 뒤 보인다(js/fonts.js, 최대 1초). 자리는 그대로 잡혀 아래가 움직이지 않는다. */
+[data-font-wait] { visibility: hidden; }
 .hero { display: grid; gap: var(--space-lg); padding-block: var(--space-xl) var(--space-lg); }
 .hero__text { display: grid; gap: var(--space-md); }
 .hero__title { font-size: var(--text-display); max-width: 12em; }
