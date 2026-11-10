@@ -29,7 +29,7 @@
 - `DESIGN.md` — 색·글꼴·간격·모서리·그림자·컴포넌트 규칙(값은 `css/tokens.css`)
 - `.impeccable/design.json` — DESIGN.md 사이드카(그림자·모션·브레이크포인트)
 - `docs/specs/` — 기능 명세(`2026-11-08-guide-site-design.md`)
-- `docs/plans/` — 구현 계획(`2026-11-08-m0-skeleton-deploy.md`)
+- `docs/plans/`·`docs/reports/` — 끝난 마일스톤의 구현 계획·출시 기록(로컬 전용, git 제외)
 
 ## 규칙
 1. 색·글꼴은 DESIGN.md와 `css/tokens.css`의 토큰만 쓴다. 토큰 블록 밖에 색 값·`font-family`를 직접 쓰지 않는다. 새 값이 필요하면 DESIGN.md부터 고친다
