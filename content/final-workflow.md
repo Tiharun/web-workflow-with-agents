@@ -54,7 +54,7 @@
 [4 디자인 고정]  초기화 → init → 리서치 → shape → (playground) → hallmark → 미세조정 → document
    ↓                                     ▶ PRODUCT.md · 대표 페이지 · DESIGN.md
 [5 스펙·계획]  CLAUDE.md → brainstorming → writing-plans(M0)
-   ↓                                     ▶ specs/…-design.md · plans/…-m0.md
+   ↓                                     ▶ specs/…-design.md · plans/…-M0.md
 ┌─ 마일스톤 루프: M0 골격+배포 → M1…Mn 기능 → 8 콘텐츠 → 9 품질 패스
 │   새 세션 → 플랜 → 실행 → 증거 → 사람 확인 → 병합·배포 ─┐
 └──────────────────── 다음 마일스톤 ◀─────────────────────┘
@@ -94,7 +94,7 @@ effort는 권유입니다. superpowers 문서는 "플랜이 설계를 담고 있
 | `DESIGN.md` (+ sidecar) | 4 impeccable document | **디자인 기준** | 변경 금지. 바꾸면 document 재실행 |
 | `CLAUDE.md` | 5 | 명령어·문서 지도·규칙 | 짧게. 내용 복사 대신 경로만 |
 | `docs/superpowers/specs/<날짜>-<주제>-design.md` | 5 brainstorming | 스펙 + 마일스톤 목록 | 플랜의 근거 |
-| `docs/superpowers/plans/<날짜>-<이름>.md` | 5·7 writing-plans | 마일스톤 1개의 태스크 | 1 플랜 = 1 마일스톤 |
+| `docs/superpowers/plans/<날짜>-Mn.md` | 5·7 writing-plans | 마일스톤 1개의 태스크 | 1 플랜 = 1 마일스톤 |
 | `src/config/site.*` + `.env` | 6 M0 | 사이트 이름·URL | 하드코딩 금지 |
 
 **원본 문서와의 대응**
@@ -281,7 +281,7 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 지금까지의 문서를 읽고 프로젝트 CLAUDE.md를 50줄 이내로 만들어 줘.
 - 목적 한 문장, 스택, 실행·빌드·테스트 명령
 - 문서 지도: brief·GLOSSARY·adr·PRODUCT·DESIGN·specs·plans의 경로와 역할 한 줄씩(내용 복사 금지)
-- 규칙: DESIGN.md 밖의 색·폰트 금지, 사이트 이름·URL은 설정 파일 한 곳, 공용 컴포넌트 재사용, 완료 전 테스트 출력·스크린샷 제시, 사소한 문제·지적(Minor)이 나올 경우 미루지 않고 바로 해결하고 미뤄야 한다면 마일스톤에 바로 추가하고 수정해서 잊지 않고 해결되도록 할 것
+- 규칙: DESIGN.md 밖의 색·폰트 금지, 사이트 이름·URL은 설정 파일 한 곳, 공용 컴포넌트 재사용, 완료 전 테스트 출력·스크린샷 제시, 사소한 문제·지적(Minor)이 나올 경우 미루지 않고 바로 해결하고 미뤄야 한다면 마일스톤에 바로 추가하고 수정해서 잊지 않고 해결되도록 할 것.
 ```
 
 결과 예시:
@@ -335,8 +335,8 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 
 | 방식 | 내용 | 고를 때 |
 |---|---|---|
-| Subagent-driven (`subagent-driven-development`) | 태스크마다 새 구현자 + 리뷰어, 끝에 브랜치 전체 리뷰 | 기본 추천. 품질 우선 |
-| Native (`executing-plans`) | 현재 세션이 직접 구현, 끝에 리뷰 1회 | 비용 절약. 작은 마일스톤 |
+| Subagent-driven (`subagent-driven-development`) | 태스크마다 새 구현자 + 리뷰어, 끝에 브랜치 전체 리뷰 | 품질 우선 |
+| Native (`executing-plans`) | 현재 세션이 직접 구현, 끝에 리뷰 1회 | 기본 추천. 비용 절약. 작은 마일스톤 |
 
 **통과 조건**
 - [ ] 마일스톤마다 눈으로 확인 가능한 완료 기준이 있다 (✗ "게시판 구현" → ○ "목록에 글 3개가 보이고 클릭하면 상세로 이동")
@@ -349,7 +349,7 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 
 ```text
 CLAUDE.md를 먼저 읽어 줘.
-/superpowers:executing-plans docs/superpowers/plans/<날짜>-Mn.md
+/superpowers:executing-plans docs/superpowers/plans/<날짜>-M0.md
 - 공통 레이아웃·공용 컴포넌트는 DESIGN.md 기준, 홈과 같은 품질로
 - 계정 로그인·저장소 연결처럼 내 계정이 필요한 일은 멈추고 절차를 알려 줘
 - 끝나면 배포 URL, 전 페이지 375/1280 스크린샷, 테스트 출력, 다음 진행사항을 보여 줘
