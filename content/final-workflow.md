@@ -315,6 +315,7 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 - 테스트 전략: 로직은 단위 테스트, 페이지 동작은 Playwright e2e, 시각 품질은 375/768/1280 스크린샷 대조
 - 전역 제약: DESIGN.md 토큰만 사용, 사이트 이름·URL은 설정 한 곳
 - 마일스톤: M0 골격+배포 → M1~Mn 기능 → 콘텐츠 → 품질 패스. 각각 한 세션 크기, 눈으로 확인 가능한 완료 기준 2~4개
+- 플랜 네이밍 규칙: writing-plans으로 플랜의 네이밍은 `<날짜>-Mn.md`로 할 것. (예시: 2026-11-13-M1.md)
 ```
 
 새 프로젝트이므로 brainstorming은 architectural 경로(스펙 파일 작성 → 사용자 검토)로 진행됩니다(측정).
@@ -351,7 +352,7 @@ CLAUDE.md를 먼저 읽어 줘.
 /superpowers:executing-plans docs/superpowers/plans/<날짜>-m0-skeleton.md
 - 공통 레이아웃·공용 컴포넌트는 DESIGN.md 기준, 홈과 같은 품질로
 - 계정 로그인·저장소 연결처럼 내 계정이 필요한 일은 멈추고 절차를 알려 줘
-- 끝나면 배포 URL, 전 페이지 375/1280 스크린샷, 테스트 출력을 보여 줘
+- 끝나면 배포 URL, 전 페이지 375/1280 스크린샷, 테스트 출력, 다음 진행사항을 보여 줘
 ```
 
 (Subagent를 골랐다면 `/superpowers:subagent-driven-development`.) 직접 확인한 뒤 병합합니다. merge·PR·유지·폐기 중에서 고르고, push는 직접 승인합니다.
