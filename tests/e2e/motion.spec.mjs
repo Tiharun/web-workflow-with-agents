@@ -109,8 +109,10 @@ test.describe('motion allowed', () => {
   test('find-in-page (Ctrl+F) to text in a block not yet revealed shows it within 2s', async ({ page }) => {
     await openPage(page, '/#/final');
     const word = await page.locator('#doc > p').evaluateAll((ps) => {
-      const p = ps[Math.floor(ps.length * 0.7)];
-      return p.textContent.trim().slice(0, 12);
+      // '범용'처럼 같은 글이 앞에 또 있으면 찾기가 거기서 멈춘다. 문서에 한 번만 나오는 문단을 고른다.
+      const all = document.body.textContent;
+      const words = ps.slice(Math.floor(ps.length * 0.7)).map((p) => p.textContent.trim().slice(0, 12));
+      return words.find((w) => w.length === 12 && all.split(w).length === 2);
     });
     expect(await page.evaluate((w) => window.find(w), word)).toBe(true); // 브라우저 찾기와 같은 즉시 스크롤
     expect(await page.evaluate(() => scrollY)).toBeGreaterThan(2000);

@@ -92,7 +92,7 @@ test('doc map groups files into stage lanes and marks the design source', async 
   const r = await build(page, md('final'), 'final', item('doc-map'));
   expect(r.ok).toBe(true);
   expect(await page.locator('#out .docmap__num').allTextContents()).toEqual(['1~3', '4', '5', '6']);
-  await expect(page.locator('#out .docmap__file')).toHaveCount(11);
+  await expect(page.locator('#out .docmap__file')).toHaveCount(13);
   await expect(page.locator('#out .docmap__file.is-key')).toHaveCount(1);
   await expect(page.locator('#out .docmap__file.is-key')).toContainText('DESIGN.md');
   await expect(page.locator('#out .docmap__file.is-key .docmap__tag')).toHaveText('디자인 기준');

@@ -4,7 +4,7 @@
 
 - 합친 자료: [웹사이트 제작 순서.md](<웹사이트 제작 순서.md>) · [design-skills-workflow 디자인 스킬 사용 순서.md](<design-skills-workflow 디자인 스킬 사용 순서.md>) · `grill-with-docs` · `superpowers`
 - 기준 버전(이 PC 측정, 2026-11-08): superpowers 6.4.2 · Hallmark 2.0.0 · impeccable 4.8.0 · interfaces 1.17.0 · ui-ux-pro-max 2.15.0
-- 예시 프로젝트: 망원동 독립서점 「책방 오늘」의 '심야 책 모임' 예약 사이트
+- 예시 프로젝트: 게임 홍보 「등불 항로」(가상) · 일반 「모아 세무회계」(가상) · 망원동 독립서점 「책방 오늘」의 '심야 책 모임' 예약 사이트. 프롬프트는 **범용**을 먼저 두고 그 아래에 **게임 → 일반 → 책방** 예시를 둡니다.
 - "왜 이렇게 하는지" 배경은 원본 두 문서에 있습니다. 이 문서는 **순서 · 스킬 · 프롬프트**만 다룹니다.
 
 ---
@@ -34,7 +34,7 @@
 ### 0-3. 사전 점검 (5분)
 
 - 입력창에 `/`를 쳐서 이름을 확인합니다: `grill-with-docs` · `superpowers:brainstorming` · `impeccable:impeccable` · `hallmark` · `ui-ux-pro-max:ui-ux-pro-max` · `interfaces:better-interface`
-- ⚠️ **superpowers 확인 필요(측정)**: 이 PC에서는 claude.ai 동기화 목록에 `available`(설치 가능) 상태로만 있고, `settings.json`의 활성 플러그인과 현재 세션 스킬 목록에는 없습니다. `/`에 안 보이면 터미널 `claude`에서 직접 설치합니다(superpowers README 기준).
+- ⚠️ **superpowers가 `/`에 안 보이면**: 터미널 `claude`에서 직접 설치합니다(superpowers README 기준). 이 PC는 2026-11-15 기준 현재 세션 스킬 목록에 `superpowers:*`가 있습니다(측정).
 
 ```text
 /plugin install superpowers@claude-plugins-official
@@ -66,7 +66,7 @@
 
 | 단계 | 메인 스킬 | 핵심 산출물 | 코드 | 권장 effort | 세션 |
 |---|---|---|---|---|---|
-| 0 준비 | — | git, `.gitignore` | ✗ | 낮음 | 1 |
+| 0 준비 | — | git, `.gitignore`, 자료 폴더 | ✗ | 낮음 | 1 |
 | 1~3 결정 | `/grill-with-docs` | `docs/brief.md`, `GLOSSARY.md`, `docs/adr/` | ✗ | 높음 | 1 |
 | 4 디자인 고정 | impeccable → ui-ux-pro-max → hallmark | `PRODUCT.md`, 대표 페이지, `DESIGN.md` | △ 1페이지 | 높음 | 1~2 |
 | 5 스펙·계획 | `brainstorming` → `writing-plans` | `CLAUDE.md`, 스펙, M0 플랜 | ✗ | 높음 | 1 |
@@ -83,19 +83,27 @@ effort는 권유입니다. superpowers 문서는 "플랜이 설계를 담고 있
 
 ## 2. 문서 지도 — 어떤 파일이 무엇의 기준인가
 
-| 파일 | 만드는 단계·스킬 | 역할 | 규칙 |
-|---|---|---|---|
-| `docs/brief.md` | 1~3 grill 마무리 | 범위·사이트맵·데이터·스택 요약 | 결정이 바뀌면 여기부터 고친다 |
-| `GLOSSARY.md` | 1~3 domain-modeling | 용어 정의 | 구현 내용 금지 |
-| `docs/adr/NNNN-*.md` | 1~3 domain-modeling | 되돌리기 어려운 결정(스택·호스팅·저장) | 되돌리기 어렵고 · 맥락 없이 의아하고 · 실제 트레이드오프일 때만 |
-| `PRODUCT.md` | 4 impeccable init | 대상·목표·목소리·스택 | 디자인 값 없음 |
-| `design-system/<slug>/MASTER.md` | 4 ui-ux-pro-max | 리서치 선택지 | 참고용, 기준 아님 |
-| `tokens.css` · `base.css` · `.hallmark/` | 4 hallmark | 토큰·빌드 기록 | — |
-| `DESIGN.md` (+ sidecar) | 4 impeccable document | **디자인 기준** | 변경 금지. 바꾸면 document 재실행 |
-| `CLAUDE.md` | 5 | 명령어·문서 지도·규칙 | 짧게. 내용 복사 대신 경로만 |
-| `docs/superpowers/specs/<날짜>-<주제>-design.md` | 5 brainstorming | 스펙 + 마일스톤 목록 | 플랜의 근거 |
-| `docs/superpowers/plans/<날짜>-Mn.md` | 5·7 writing-plans | 마일스톤 1개의 태스크 | 1 플랜 = 1 마일스톤 |
-| `src/config/site.*` + `.env` | 6 M0 | 사이트 이름·URL | 하드코딩 금지 |
+| 파일 | 만드는 단계·스킬 | 역할 | 규칙 | 구현(6단계~) 때 |
+|---|---|---|---|---|
+| `docs/brief.md` | 1~3 grill 마무리 | 범위·사이트맵·데이터·스택 요약 | 결정이 바뀌면 여기부터 고친다 | 참조 |
+| `GLOSSARY.md` | 1~3 domain-modeling | 용어 정의 | 구현 내용 금지 | 참조 |
+| `docs/adr/NNNN-*.md` | 1~3 domain-modeling | 되돌리기 어려운 결정(스택·호스팅·저장) | 되돌리기 어렵고 · 맥락 없이 의아하고 · 실제 트레이드오프일 때만 | 참조 |
+| `PRODUCT.md` | 4 impeccable init | 대상·목표·목소리·스택 | 디자인 값 없음 | 참조 |
+| `docs/shape-<페이지>.md` | 4-4 impeccable shape(저장 요청) | 대표 페이지의 섹션 구성·우선순위, 고른 색·폰트 값 | 채팅에만 남기지 않는다 | 참조 |
+| `docs/INDEX.md` | 4-4 작성 · 4-8 갱신 | 지금까지 만든 문서 목록 | 5-1에서 `CLAUDE.md` 문서 지도로 옮기고 지운다 | 없음(임시) |
+| `design-system/<slug>/MASTER.md` | 4 ui-ux-pro-max | 리서치 선택지 | 참고용, 기준 아님 | 없어도 됨 |
+| `tokens.css` · `base.css` · `.hallmark/` | 4 hallmark | 토큰·빌드 기록 | — | **필수**(토큰 CSS) |
+| `DESIGN.md` (+ sidecar) | 4 impeccable document | **디자인 기준** | 변경 금지. 바꾸면 document 재실행 | **필수** |
+| `CLAUDE.md` | 5 | 명령어·문서 지도·규칙 | 짧게. 내용 복사 대신 경로만 | **필수**(자동으로 읽힘) |
+| `docs/superpowers/specs/<날짜>-<주제>-design.md` | 5 brainstorming | 스펙 + 마일스톤 목록 | 플랜의 근거. 병합할 때마다 마일스톤에 완료 표시 | **필수** |
+| `docs/superpowers/plans/<날짜>-Mn.md` | 5·7 writing-plans | 마일스톤 1개의 태스크 | 1 플랜 = 1 마일스톤 | **필수**(해당 마일스톤 것) |
+| `src/config/site.*` + `.env` | 6 M0 | 사이트 이름·URL | 하드코딩 금지 | **필수** |
+
+**스펙 하나로는 부족합니다.**
+- 스펙에 들어가는 것: 구조·컴포넌트·데이터 흐름·에러 처리·테스트(측정)와 5-2에서 요청한 마일스톤 목록.
+- 스펙에 들어가지 않는 것: 디자인 값·용어·결정 이유·범위. 옮겨 적지 않고 경로로 가리킵니다.
+- 플랜은 머리말에 스펙 경로를 적고, 실행자는 플랜과 스펙을 함께 읽습니다(측정).
+- 그래서 구현 세션은 `CLAUDE.md`(자동) → 플랜 → 스펙 → `DESIGN.md` 순서로 읽고, **참조** 문서는 문서 지도를 따라 필요할 때 찾습니다.
 
 **원본 문서와의 대응**
 - `웹사이트 제작 순서`의 `docs/01-범위`·`02-구조`·`03-스택` → `docs/brief.md` + `docs/adr/`
@@ -112,14 +120,64 @@ effort는 권유입니다. superpowers 문서는 "플랜이 설계를 담고 있
 >
 > `이 세션은 superpowers 브레인스토밍 없이 진행해.`
 
+**예시 읽는 법 — 범용 · 게임 · 일반 · 책방**
+
+- 장르에 따라 내용이 달라지는 프롬프트에는 **범용**(빈칸 채우기)을 먼저 두고 **예시 · 게임 → 일반 → 책방**을 붙였습니다.
+- 예시가 없는 프롬프트는 어느 장르든 그대로 씁니다.
+- 다른 장르라면 아래 표의 행을 내 사이트 기준으로 채운 뒤 범용 프롬프트의 빈칸에 넣습니다.
+
+| | 게임 홍보 | 일반(회사·서비스 소개) | 책방(모임 예약) |
+|---|---|---|---|
+| 예시 | 인디 게임 「등불 항로」(가상) | 「모아 세무회계」(가상) | 「책방 오늘」 |
+| 목적 | 출시 전 관심 모으기 | 상담 문의 받기 | 모임 예약 받기 |
+| 단 하나의 행동 | Steam 찜하기 | 상담 문의 보내기 | 모임 예약 |
+| 핵심 기능 | 트레일러, 게임 특징, 스크린샷, 개발 일지, 프레스 킷 | 서비스 안내, 수수료, 사례·후기, 자주 묻는 질문, 문의 폼 | 모임 일정·예약, 이달의 책, 매장 소개 |
+| 주요 데이터 | 스크린샷, 영상 주소, 개발 일지 글 | 서비스 항목, 수수료 표, 문의 내용 | 모임 일정, 정원, 예약자 |
+| 대표 페이지 | 홈(트레일러 히어로) | 홈(서비스 요약 + 문의) | 홈(다음 모임 + 예약) |
+| 톤 | 몰입감, 어둡고 강한 대비 | 신뢰, 명료, 차분 | 조용하고 따뜻함 |
+| 실제 자료 | 키 아트, 스크린샷, 트레일러, 로고 | 사무실·대표 사진, 자격 정보, 후기 | 매장 사진, 후기, 로고 |
+
+> 브라우저에서 바로 플레이하는 **웹게임**은 위 게임 홍보 예시와 다릅니다(추측, 이 순서로 만들어 보지 않음).
+> ① 4단계 기준을 대표 페이지 대신 '핵심 조작 한 판이 되는 플레이 화면'으로 잡고
+> ② 스펙에 게임 루프·입력·상태 저장·프레임 기준을 넣고
+> ③ 테스트는 규칙 로직 단위 테스트와 직접 플레이 확인의 비중을 높입니다.
+
 ### 0단계. 준비
+
+**세션과 모델을 나눠 쓸 때**
+
+한 세션으로 4단계까지 가도 됩니다. 사용량이 넉넉해 단계마다 모델을 바꾸고 싶다면 세션을 나눕니다. 세션끼리는 대화를 공유하지 않으므로 **파일로 넘깁니다**.
+
+| 세션 | 모델(예) | 범위 | 끝낼 때 |
+|---|---|---|---|
+| A | Fable 5.2 | 0 ~ 4-5 (결정, 디자인 설계) | 화면 기획과 고른 값이 파일에 있는지 확인, `docs/INDEX.md` 갱신, 커밋 |
+| B | Opus 5.5 | 4-6 ~ 4-7 (대표 페이지 구현·보강) | 대표 페이지 승인, 커밋 |
+| C | Fable 5.2 | 4-8 ~ 5 (기준 고정, 스펙·계획) | — |
+
+B·C 세션의 첫 문장(4단계 세션이면 맨 앞에 `이 세션은 superpowers 브레인스토밍 없이 진행해.`도 붙입니다):
+
+```text
+docs/INDEX.md와 거기 적힌 문서를 먼저 읽어 줘. 이번 세션 목표: (단계).
+```
+
+- C는 A로 돌아가지 말고 **새 세션**으로 엽니다. A는 B가 바꾼 파일을 모르고 긴 대화를 그대로 지고 갑니다. 4-8은 코드 값을 읽으므로 새 세션이어도 됩니다.
+- 한 세션 안에서 `/model`로 바꾸는 방법도 있습니다(검색 확인). 다만 전환이 반영되지 않았다는 버그 보고가 있어 세션을 나누는 쪽이 안전합니다.
+- 6단계부터는 마일스톤마다 새 세션이고 `CLAUDE.md`가 자동으로 읽힙니다.
+
+**프로젝트 준비**
 
 ```text
 새 웹사이트 프로젝트 준비만 해 줘. 코드는 쓰지 마.
 - git 저장소 생성
 - .gitignore: .env, node_modules, 브라우저 세션·쿠키 상태 파일
-- 빈 docs/ 폴더
+- 빈 docs/ 폴더, 자료를 넣을 assets/ 폴더
 ```
+
+**자료 준비 (직접)**
+
+- 실제 자료를 `assets/`에 모아 둡니다: 사진, 로고, 후기 원문(공개 동의), 수치. 장르별 예는 위 대조표의 '실제 자료' 행을 봅니다.
+- 4-2와 4-6이 이 자료를 요구하고, Hallmark는 수치·후기·로고를 지어내지 않습니다(측정).
+- 아직 없는 자료는 "없음"이라고 적어 둡니다. 자리표시자로 만든 화면은 4-7에서 반려 대상입니다.
 
 ---
 
@@ -130,7 +188,46 @@ effort는 권유입니다. superpowers 문서는 "플랜이 설계를 담고 있
 - 진행 방식(측정): 지금 답할 수 있는 질문을 한 라운드에 번호를 붙여 묻고, 질문마다 추천 답을 붙입니다. "yes"면 추천 답을 채택합니다.
 - 사실 조사는 Claude 몫, 결정은 사용자 몫입니다. 용어가 정해지면 `GLOSSARY.md`, 되돌리기 어려운 결정은 ADR로 그 자리에서 기록합니다.
 
-**시작**
+**시작 · 범용**
+
+```text
+/grill-with-docs
+웹사이트를 만들려고 해. 코드는 쓰지 말고 결정만 굳히자.
+- 목적: (누가 이 사이트에서 무엇을 하게 만들 것인지 한 문장)
+- 대상: (주 방문자)
+- 떠오르는 기능: (생각나는 대로 나열. 추리는 건 인터뷰에서)
+- 조건: (경험 수준, 예산, 기한, 이미 가진 자료)
+설계 트리는 ① 범위(핵심 기능 3~5개, 안 만들 것, 성공 기준, 다크 모드 지원 여부) → ② 구조(사이트맵, 페이지 역할, 데이터 필드, 404·빈 상태) → ③ 스택(정적/서버, 프레임워크, 호스팅, 데이터 저장) 순서로 잡아 줘.
+스택·호스팅처럼 사실 확인이 필요한 건 공식 문서를 찾아 근거 링크와 함께 추천해 줘.
+```
+
+**시작 · 예시 · 게임**
+
+```text
+/grill-with-docs
+웹사이트를 만들려고 해. 코드는 쓰지 말고 결정만 굳히자.
+- 목적: 인디 게임 「등불 항로」(픽셀 아트 항해 어드벤처)의 출시 전 관심을 모으고 Steam 찜하기로 보낸다
+- 대상: 인디 게임을 즐기는 PC 게이머, 게임 매체·스트리머
+- 떠오르는 기능: 트레일러, 게임 특징, 스크린샷 갤러리, 개발 일지, 프레스 킷 내려받기, 출시 알림 메일 신청, 다국어
+- 조건: 초보자, 무료 호스팅으로 시작, 1인 개발이라 관리할 것이 적어야 함
+설계 트리는 ① 범위(핵심 기능 3~5개, 안 만들 것, 성공 기준, 다크 모드 지원 여부) → ② 구조(사이트맵, 페이지 역할, 데이터 필드, 404·빈 상태) → ③ 스택(정적/서버, 프레임워크, 호스팅, 데이터 저장) 순서로 잡아 줘.
+스택·호스팅처럼 사실 확인이 필요한 건 공식 문서를 찾아 근거 링크와 함께 추천해 줘.
+```
+
+**시작 · 예시 · 일반**
+
+```text
+/grill-with-docs
+웹사이트를 만들려고 해. 코드는 쓰지 말고 결정만 굳히자.
+- 목적: 「모아 세무회계」(소규모 세무사 사무소)의 서비스를 알리고 상담 문의를 받는다
+- 대상: 개인사업자와 직원 10명 이하 회사의 대표
+- 떠오르는 기능: 서비스 안내, 수수료 안내, 고객 사례·후기, 자주 묻는 질문, 상담 문의 폼, 오시는 길, 블로그
+- 조건: 초보자, 무료 호스팅으로 시작, 문의는 이메일로 받고 싶음
+설계 트리는 ① 범위(핵심 기능 3~5개, 안 만들 것, 성공 기준, 다크 모드 지원 여부) → ② 구조(사이트맵, 페이지 역할, 데이터 필드, 404·빈 상태) → ③ 스택(정적/서버, 프레임워크, 호스팅, 데이터 저장) 순서로 잡아 줘.
+스택·호스팅처럼 사실 확인이 필요한 건 공식 문서를 찾아 근거 링크와 함께 추천해 줘.
+```
+
+**시작 · 예시 · 책방**
 
 ```text
 /grill-with-docs
@@ -139,7 +236,7 @@ effort는 권유입니다. superpowers 문서는 "플랜이 설계를 담고 있
 - 대상: 동네 20~40대 직장인
 - 떠오르는 기능: 모임 일정·예약, 이달의 책, 매장 소개·오시는 길, 인스타 피드, 회원 로그인
 - 조건: 초보자, 무료 호스팅으로 시작
-설계 트리는 ① 범위(핵심 기능 3~5개, 안 만들 것, 성공 기준) → ② 구조(사이트맵, 페이지 역할, 데이터 필드, 404·빈 상태) → ③ 스택(정적/서버, 프레임워크, 호스팅, 데이터 저장) 순서로 잡아 줘.
+설계 트리는 ① 범위(핵심 기능 3~5개, 안 만들 것, 성공 기준, 다크 모드 지원 여부) → ② 구조(사이트맵, 페이지 역할, 데이터 필드, 404·빈 상태) → ③ 스택(정적/서버, 프레임워크, 호스팅, 데이터 저장) 순서로 잡아 줘.
 스택·호스팅처럼 사실 확인이 필요한 건 공식 문서를 찾아 근거 링크와 함께 추천해 줘.
 ```
 
@@ -153,7 +250,7 @@ Q1 yes / Q2 B / Q3 아니, 로그인은 2차로 미뤄
 
 ```text
 합의 완료. 정리해 줘.
-1) docs/brief.md: 목적, 대상, 핵심 기능(완료 모습 한 줄씩), 안 만들 것, 성공 기준, 사이트맵, 데이터 필드, 대표 페이지 1개, 스택 요약(ADR 링크)
+1) docs/brief.md: 목적, 대상, 핵심 기능(완료 모습 한 줄씩), 안 만들 것, 성공 기준, 다크 모드 지원 여부, 사이트맵, 데이터 필드, 대표 페이지 1개, 스택 요약(ADR 링크)
 2) GLOSSARY.md와 docs/adr/ 파일 목록을 경로로 보여 줘
 3) 다 작성하고 수정한 문서들의 경로를 내게 알려 줘
 ```
@@ -183,6 +280,35 @@ docs/brief.md와 docs/adr/의 스택으로 프로젝트만 초기화하고 dev �
 
 **4-2. 제품 맥락 — `impeccable init`**
 
+**범용**
+
+```text
+/impeccable:impeccable init
+docs/brief.md를 근거로 PRODUCT.md를 만들어 줘. brief에 없는 것만 물어봐.
+- 실제 자료: (자료가 있는 폴더와 종류·개수. 사진, 로고, 후기, 수치 등)
+- 목소리: (형용사 2~3개)
+```
+
+**예시 · 게임**
+
+```text
+/impeccable:impeccable init
+docs/brief.md를 근거로 PRODUCT.md를 만들어 줘. brief에 없는 것만 물어봐.
+- 실제 자료: /assets/key-art 키 아트 2장, /assets/screens 스크린샷 8장, 로고 /assets/logo.svg, 트레일러 YouTube 주소
+- 목소리: 짧고 힘 있게, 과장 없이
+```
+
+**예시 · 일반**
+
+```text
+/impeccable:impeccable init
+docs/brief.md를 근거로 PRODUCT.md를 만들어 줘. brief에 없는 것만 물어봐.
+- 실제 자료: /assets/photos 사무실·대표 사진 4장, 세무사 자격·경력 정보, 고객 후기 3개(이름 공개 동의)
+- 목소리: 정중하고 명료하게, 전문 용어는 풀어서
+```
+
+**예시 · 책방**
+
 ```text
 /impeccable:impeccable init
 docs/brief.md를 근거로 PRODUCT.md를 만들어 줘. brief에 없는 것만 물어봐.
@@ -194,6 +320,35 @@ init은 문서를 먼저 훑고 빈 곳만 최대 3개씩 묻습니다. 색·폰
 
 **4-3. 리서치 — `ui-ux-pro-max`** (선택지 모으기, 결정 아님)
 
+**범용**
+
+```text
+/ui-ux-pro-max:ui-ux-pro-max
+"(업종·분위기를 영어 키워드 4~6개로)"로 --design-system 검색해 줘.
+--variance (1~10) --motion (1~10) --density (1~10), --project-name "(영문 프로젝트 이름)", --persist로 프로젝트 루트에 저장.
+추천 팔레트 2개와 폰트 조합 2개를 표로 비교하고 한글 웹폰트 대안도 붙여 줘.
+```
+
+**예시 · 게임**
+
+```text
+/ui-ux-pro-max:ui-ux-pro-max
+"indie game pixel art adventure cinematic dark"로 --design-system 검색해 줘.
+--variance 8 --motion 7 --density 4, --project-name "Lantern Route", --persist로 프로젝트 루트에 저장.
+추천 팔레트 2개와 폰트 조합 2개를 표로 비교하고 한글 웹폰트 대안도 붙여 줘.
+```
+
+**예시 · 일반**
+
+```text
+/ui-ux-pro-max:ui-ux-pro-max
+"tax accounting firm professional trust clean"로 --design-system 검색해 줘.
+--variance 3 --motion 2 --density 5, --project-name "Moa Tax", --persist로 프로젝트 루트에 저장.
+추천 팔레트 2개와 폰트 조합 2개를 표로 비교하고 한글 웹폰트 대안도 붙여 줘.
+```
+
+**예시 · 책방**
+
 ```text
 /ui-ux-pro-max:ui-ux-pro-max
 "independent bookstore community events editorial"로 --design-system 검색해 줘.
@@ -201,17 +356,86 @@ init은 문서를 먼저 훑고 빈 곳만 최대 3개씩 묻습니다. 색·폰
 추천 팔레트 2개와 폰트 조합 2개를 표로 비교하고 한글 웹폰트 대안도 붙여 줘.
 ```
 
+숫자의 뜻(측정): `--variance` 1 = 가운데 정렬·미니멀, 10 = 과감·비대칭 / `--motion` 1 = 은은함, 10 = 복잡함 / `--density` 1 = 여백 넓음, 10 = 빽빽함
+
 **4-4. 화면 기획 — `impeccable shape`**
+
+**범용**
+
+```text
+/impeccable:impeccable shape (대표 페이지)
+PRODUCT.md와 docs/brief.md 기준으로 (대표 페이지)의 섹션 구성과 정보 우선순위를 잡아 줘. 문서에 있는 건 묻지 마.
+(단 하나의 행동)까지 가는 흐름을 최단으로. 코드는 쓰지 마.
+
+내가 확정하면 그 기획을 `docs/shape-<페이지>.md`에 저장해 줘.
+지금까지 작성한 문서들을 연결해 줄 문서를 `docs/INDEX.md`에 작성하고 내게 알려 줘.
+```
+
+**예시 · 게임**
+
+```text
+/impeccable:impeccable shape 홈
+PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선순위를 잡아 줘. 문서에 있는 건 묻지 마.
+트레일러 재생과 Steam 찜하기 버튼까지 가는 흐름을 최단으로. 코드는 쓰지 마.
+
+내가 확정하면 그 기획을 `docs/shape-home.md`에 저장해 줘.
+지금까지 작성한 문서들을 연결해 줄 문서를 `docs/INDEX.md`에 작성하고 내게 알려 줘.
+```
+
+**예시 · 일반**
+
+```text
+/impeccable:impeccable shape 홈
+PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선순위를 잡아 줘. 문서에 있는 건 묻지 마.
+상담 문의 버튼까지 가는 흐름을 최단으로. 수수료와 자격 정보는 문의 전에 보이게. 코드는 쓰지 마.
+
+내가 확정하면 그 기획을 `docs/shape-home.md`에 저장해 줘.
+지금까지 작성한 문서들을 연결해 줄 문서를 `docs/INDEX.md`에 작성하고 내게 알려 줘.
+```
+
+**예시 · 책방**
 
 ```text
 /impeccable:impeccable shape 홈
 PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선순위를 잡아 줘. 문서에 있는 건 묻지 마.
 예약 버튼까지 가는 흐름을 최단으로. 코드는 쓰지 마.
 
+내가 확정하면 그 기획을 `docs/shape-home.md`에 저장해 줘.
 지금까지 작성한 문서들을 연결해 줄 문서를 `docs/INDEX.md`에 작성하고 내게 알려 줘.
 ```
 
+shape는 기획을 채팅에 보여 주고 멈춥니다(측정). 파일로 남겨야 다른 세션의 4-6이 읽을 수 있습니다.
+
 **4-5. (선택) 값 탐색 — `playground`** — 색·폰트·여백을 말로 정하기 어려울 때
+
+**범용**
+
+```text
+/playground:playground
+(사이트 이름) 히어로용 플레이그라운드를 만들어 줘.
+조절: (바꿔 보고 싶은 값 4~6개. 배경, 포인트 색, 제목 폰트, 제목 크기, 줄간격, 버튼 모서리 등)
+프리셋: ui-ux-pro-max 추천 팔레트 2개 + '(내가 떠올린 분위기 이름)'
+```
+
+**예시 · 게임**
+
+```text
+/playground:playground
+「등불 항로」 히어로용 플레이그라운드를 만들어 줘.
+조절: 배경(밤바다 계열 어두운 색), 포인트 색(등불 주황 계열), 제목 폰트(픽셀/고딕), 제목 크기, 키 아트 위 어둡기, 버튼 모서리
+프리셋: ui-ux-pro-max 추천 팔레트 2개 + '등불 켠 밤바다'
+```
+
+**예시 · 일반**
+
+```text
+/playground:playground
+「모아 세무회계」 히어로용 플레이그라운드를 만들어 줘.
+조절: 배경(흰색/아주 옅은 회색), 포인트 색(남색 계열), 제목 폰트(고딕 굵기), 제목 크기, 줄간격, 버튼 모서리
+프리셋: ui-ux-pro-max 추천 팔레트 2개 + '단정한 사무실'
+```
+
+**예시 · 책방**
 
 ```text
 /playground:playground
@@ -220,9 +444,56 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 프리셋: ui-ux-pro-max 추천 팔레트 2개 + '심야 서점'
 ```
 
-→ 하단에 생성된 프롬프트의 값을 4-6 브리프의 분위기·기준 색에 붙입니다.
+→ 하단에 생성된 프롬프트의 값을 4-6 브리프의 분위기·기준 색에 붙입니다. 세션을 나눈다면 고른 값을 `docs/shape-<페이지>.md` 끝에 적어 둡니다.
 
 **4-6. 대표 페이지 빌드 — `hallmark`**
+
+**범용**
+
+```text
+/hallmark (사이트 이름) (대표 페이지), 최종 출시 수준으로
+- 자료: (사진·로고·후기·수치의 경로. 후기 원문은 아래에 붙임)
+- 대상: (주 방문자) / 단 하나의 행동: (가장 중요한 버튼 하나)
+- 톤: (한 단어) / 분위기: (장면 한 줄) / 기준 색: (#색상값)
+- 좋아하는 느낌: (참고 사이트의 좋은 점을 말로)
+- 다크 모드: (brief에서 정한 대로. 만든다면 "따로 설계, 색 반전만 하지 말 것")
+- 섹션 순서는 docs/shape-<페이지>.md를 따르되 레이아웃은 맡김
+- brief의 프레임워크 안에 실제 라우트로 만들어 줘
+완료 기준: 기본 폰트·기본 색·회색 박스·자리표시자 없음, 지금까지 정리한 모든 내용과 모션과 애니메이션까지 포함된 최종 출시 수준이어야 함, 375px·768px·1280px 모두 정상.
+고른 테마·구도(Picks)와 이유를 알려 줘.
+```
+
+**예시 · 게임**
+
+```text
+/hallmark 「등불 항로」 홈, 최종 출시 수준으로
+- 자료: /assets/key-art 2장, /assets/screens 8장, 로고 /assets/logo.svg, 트레일러 YouTube 주소(아래)
+- 대상: 인디 게임을 즐기는 PC 게이머 / 단 하나의 행동: Steam 찜하기
+- 톤: cinematic / 분위기: 안개 낀 밤바다에 등불 하나가 켜지는 순간 / 기준 색: #0E1B2B
+- 좋아하는 느낌: 키 아트가 화면을 가득 채우고 글자는 적음, 스크롤할수록 게임 속으로 들어가는 느낌
+- 다크 모드: 따로 없음. 처음부터 어두운 화면 하나로 만든다
+- 섹션 순서는 docs/shape-home.md를 따르되 레이아웃은 맡김
+- brief의 프레임워크 안에 실제 라우트로 만들어 줘
+완료 기준: 기본 폰트·기본 색·회색 박스·자리표시자 없음, 지금까지 정리한 모든 내용과 모션과 애니메이션까지 포함된 최종 출시 수준이어야 함, 375px·768px·1280px 모두 정상.
+고른 테마·구도(Picks)와 이유를 알려 줘.
+```
+
+**예시 · 일반**
+
+```text
+/hallmark 「모아 세무회계」 홈, 최종 출시 수준으로
+- 자료: /assets/photos 4장, 로고 /assets/logo.svg, 후기 3개와 수수료 표(원문은 아래)
+- 대상: 개인사업자와 소규모 회사 대표 / 단 하나의 행동: 상담 문의 보내기
+- 톤: trustworthy / 분위기: 정돈된 책상 위에 서류가 가지런히 놓인 아침 / 기준 색: #1F3A5F
+- 좋아하는 느낌: 숫자와 표가 또렷하고 군더더기가 없음, 버튼 위치가 바로 보임
+- 다크 모드: 따로 설계. 색 반전만 하지 말 것
+- 섹션 순서는 docs/shape-home.md를 따르되 레이아웃은 맡김
+- brief의 프레임워크 안에 실제 라우트로 만들어 줘
+완료 기준: 기본 폰트·기본 색·회색 박스·자리표시자 없음, 지금까지 정리한 모든 내용과 모션과 애니메이션까지 포함된 최종 출시 수준이어야 함, 375px·768px·1280px 모두 정상.
+고른 테마·구도(Picks)와 이유를 알려 줘.
+```
+
+**예시 · 책방**
 
 ```text
 /hallmark 「책방 오늘」 홈, 최종 출시 수준으로
@@ -230,9 +501,9 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 - 대상: 망원동 20~40대 직장인 / 단 하나의 행동: '심야 책 모임' 예약
 - 톤: editorial / 분위기: 늦은 밤 스탠드 불빛 아래 종이 냄새 / 기준 색: #2F3A2E
 - 좋아하는 느낌: 여백이 넓고 글자가 또렷한 편집 디자인, 카드 간 색 대비가 분명함
-- 섹션 순서는 shape 결과를 따르되 레이아웃은 맡김
+- 섹션 순서는 docs/shape-home.md를 따르되 레이아웃은 맡김
 - brief의 프레임워크 안에 실제 라우트로 만들어 줘
-완료 기준: 기본 폰트·기본 색·회색 박스·자리표시자 없음, 지금까지 정리한 모든 내용과 모션과 애니메이션까지 포함된 최종 출시 수준이어야 함, 375px·1280px 모두 정상.
+완료 기준: 기본 폰트·기본 색·회색 박스·자리표시자 없음, 지금까지 정리한 모든 내용과 모션과 애니메이션까지 포함된 최종 출시 수준이어야 함, 375px·768px·1280px 모두 정상.
 고른 테마·구도(Picks)와 이유를 알려 줘.
 ```
 
@@ -241,7 +512,8 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 - Hallmark는 수치·후기·로고를 지어내지 않습니다(측정). 실제 자료를 먼저 준비합니다.
 - 편집할 때마다 도는 Hallmark 자동 검사 hook은 `install-hook.mjs`를 실행해야만 켜집니다(측정). 켜지 말고 9-3에서 audit을 직접 돌립니다.
 - Figma·시안 이미지가 있으면 Hallmark 대신 `/interfaces:build-design`을 씁니다.
-- 다크 모드를 만들 경우 색을 반전만 시키거나 칙칙한 느낌으로 나올 수 있으니 이 경우 직접 요청해야 합니다.
+- 다크 모드 여부는 1~3단계에서 정해 `docs/brief.md`에 적습니다. 만들 경우 색을 반전만 시키거나 칙칙한 느낌으로 나올 수 있으니 브리프에 직접 요청해야 합니다.
+- 여기서 넣은 모션이 사이트 전체의 기준입니다(4-8에서 `DESIGN.md`에 기록). 9-2는 나중에 만든 페이지를 같은 기준으로 맞추는 단계입니다.
 
 **4-7. 반려·미세조정** — 대표 페이지에만, 한 번에 한 측면
 
@@ -259,6 +531,20 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 
 쓸 수 있는 것: `bolder` · `quieter` · `/interfaces:better-typography` · `/interfaces:better-colors`
 
+**(선택) 핵심 컴포넌트 보강** — 대표 페이지에 없는 것만
+
+대표 페이지에 폼·표·빈 상태·에러가 없으면 `DESIGN.md`에 그 기준이 빠집니다. 그러면 7단계에서 만들 때마다 품질이 달라질 수 있습니다(추측). 4-8 전에 같은 품질로 만들어 둡니다.
+
+```text
+대표 페이지와 같은 토큰·품질로 (대표 페이지에 없는 핵심 컴포넌트 2~4개)를 한 화면에 만들어 줘.
+- 컴포넌트마다 기본·hover·focus·비활성·에러·빈 상태를 모두 보여 줘
+- 새 색·폰트를 만들지 말고 tokens.css만 사용
+- brief의 프레임워크 안에 실제 라우트로 만들고, 출시 전에 지울 수 있게 따로 둬
+375px·768px·1280px 스크린샷을 보여 줘.
+```
+
+`(핵심 컴포넌트)` 예: 게임 = 스크린샷 갤러리, 출시 알림 신청 폼 · 일반 = 상담 문의 폼, 수수료 표, 자주 묻는 질문 · 책방 = 예약 폼, 모임 카드, 빈 상태
+
 **4-8. 기준 고정 — `impeccable document`**
 
 ```text
@@ -270,11 +556,12 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 나도 어떤 문서들이 정리되고 있는지는 알아야 해.
 ```
 
+- 컴포넌트 보강 화면을 만들었다면 프롬프트의 괄호 안에 그 경로도 함께 적습니다.
 - Hallmark가 끝에 `lock the system`(design.md 생성)을 권해도 하지 않습니다. 두 스킬 모두 루트에 design.md를 쓰고, Windows는 `design.md`와 `DESIGN.md`를 같은 파일로 봅니다.
 
 **통과 조건**
 - [ ] 홈이 "이대로 출시해도 된다" 수준이다 (반려 기준 0개)
-- [ ] 375px·1280px 스크린샷을 둘 다 봤다
+- [ ] 375px·768px·1280px 스크린샷을 모두 봤다
 - [ ] `DESIGN.md` 값이 실제 코드 값과 같다
 - [ ] "이 결과가 앞으로의 기준선"이라는 생각으로 승인했다
 
@@ -288,11 +575,11 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 지금까지의 문서를 읽고 프로젝트 CLAUDE.md를 50줄 이내로 만들어 줘.
 - 목적 한 문장, 스택, 실행·빌드·테스트 명령
 - 문서 지도: brief·GLOSSARY·adr·PRODUCT·DESIGN·specs·plans의 경로와 역할 한 줄씩(내용 복사 금지)
-- 규칙: DESIGN.md 밖의 색·폰트 금지, 사이트 이름·URL은 설정 파일 한 곳, 공용 컴포넌트 재사용, 완료 전 테스트 출력·스크린샷 제시, 사소한 문제·지적(Minor)이 나올 경우 미루지 않고 바로 해결하고 미뤄야 한다면 마일스톤에 바로 추가하고 수정해서 잊지 않고 해결되도록 할 것
+- 규칙: DESIGN.md 밖의 색·폰트 금지, 사이트 이름·URL은 설정 파일 한 곳, 공용 컴포넌트 재사용, 완료 전 테스트 출력·스크린샷 제시, 사소한 문제·지적(Minor)이 나올 경우 미루지 않고 바로 해결하고 미뤄야 한다면 마일스톤에 바로 추가하고 수정해서 잊지 않고 해결되도록 할 것, 마일스톤을 병합하기 전에 스펙의 마일스톤 목록에 완료 표시를 할 것
 - `docs/INDEX.md` 내용에서 필요한 것들은 CLAUDE.md 문서 지도에 반영한 뒤 지운다
 ```
 
-결과 예시:
+결과 예시(책방):
 
 ```markdown
 # 책방 오늘 웹사이트
@@ -310,7 +597,8 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 - DESIGN.md 토큰 밖의 색·폰트·간격 금지
 - 사이트 이름·URL은 src/config/site.ts와 .env에서만
 - 새 페이지는 기존 레이아웃·공용 컴포넌트 사용
-- 완료 선언 전 테스트 출력과 375/1280 스크린샷 제시
+- 완료 선언 전 테스트 출력과 375/768/1280 스크린샷 제시
+- 마일스톤 병합 전 스펙의 마일스톤 목록에 완료 표시
 ```
 
 **5-2. 스펙 — `brainstorming`**
@@ -318,11 +606,12 @@ PRODUCT.md와 docs/brief.md 기준으로 홈의 섹션 구성과 정보 우선�
 ```text
 /superpowers:brainstorming
 결정은 끝났어. CLAUDE.md의 문서 지도에 있는 파일을 먼저 읽고, 정해진 건 다시 묻지 말고 빈 곳만 하나씩 물어봐.
+기존 문서(brief·GLOSSARY·adr·PRODUCT·DESIGN)의 내용은 스펙에 옮겨 적지 말고 경로로 참조해.
 스펙에 꼭 넣을 것:
 - 컴포넌트 구조, 데이터 흐름, 에러·빈 상태 처리
 - 테스트 전략: 로직은 단위 테스트, 페이지 동작은 Playwright e2e, 시각 품질은 375/768/1280 스크린샷 대조
 - 전역 제약: DESIGN.md 토큰만 사용, 사이트 이름·URL은 설정 한 곳
-- 마일스톤: M0 골격+배포 → M1~Mn 기능 → 콘텐츠 → 품질 패스. 각각 한 세션 크기, 눈으로 확인 가능한 완료 기준 2~4개
+- 마일스톤: M0 골격+배포 → M1~Mn 기능 → 콘텐츠 → 품질 패스. 각각 한 세션 크기, 눈으로 확인 가능한 완료 기준 2~4개. 목록은 체크박스(`- [ ]`)로 써서 병합할 때마다 완료 표시
 - 플랜 네이밍 규칙: writing-plans로 플랜의 네이밍은 `<날짜>-Mn.md`로 할 것. (예시: 2026-11-13-M1.md)
 ```
 
@@ -360,7 +649,7 @@ CLAUDE.md를 먼저 읽어 줘.
 /superpowers:executing-plans docs/superpowers/plans/<날짜>-M0.md
 - 공통 레이아웃·공용 컴포넌트는 DESIGN.md 기준, 홈과 같은 품질로
 - 계정 로그인·저장소 연결처럼 내 계정이 필요한 일은 멈추고 절차를 알려 줘
-- 끝나면 배포 URL, 전 페이지 375/1280 스크린샷, 테스트 출력, 다음 진행사항을 보여 줘
+- 끝나면 배포 URL, 전 페이지 375/768/1280 스크린샷, 테스트 출력, 다음 진행사항을 보여 줘
 ```
 
 (Subagent를 골랐다면 `/superpowers:subagent-driven-development`.) 직접 확인한 뒤 병합합니다. merge·PR·유지·폐기 중에서 고르고, push는 직접 승인합니다.
@@ -373,6 +662,7 @@ CLAUDE.md를 먼저 읽어 줘.
 - [ ] 배포된 실제 URL이 있고, 전 페이지가 404 없이 열린다
 - [ ] 헤더·푸터·버튼이 4단계 홈과 같은 품질이다
 - [ ] 사이트 이름·URL이 설정 파일 한 곳에 있다
+- [ ] 스펙의 마일스톤 목록에서 M0에 완료 표시가 됐다
 - [ ] 커밋·병합했다
 
 ---
@@ -389,7 +679,37 @@ CLAUDE.md를 먼저 읽어 줘.
 | 6 | 실패 시 원인부터 | `/superpowers:systematic-debugging` | Claude |
 | 7 | 병합 → 자동 배포 확인 | `/superpowers:finishing-a-development-branch` | 사용자가 선택 |
 
-**2. 플랜**
+**2. 플랜 · 범용**
+
+```text
+CLAUDE.md와 스펙(docs/superpowers/specs/<날짜>-<주제>-design.md)을 읽어 줘.
+이번 세션 목표: (Mn 마일스톤 이름).
+/superpowers:writing-plans 로 (Mn)만 플랜을 써 줘.
+- M0 공용 컴포넌트 재사용, DESIGN.md 밖 스타일 금지
+- (계산·검증 같은 로직)은 TDD, (방문자가 거치는 흐름)은 Playwright e2e로 완료 기준을 테스트로 만든다
+```
+
+**2. 플랜 · 예시 · 게임**
+
+```text
+CLAUDE.md와 스펙(docs/superpowers/specs/<날짜>-lantern-route-design.md)을 읽어 줘.
+이번 세션 목표: M2 스크린샷 갤러리.
+/superpowers:writing-plans 로 M2만 플랜을 써 줘.
+- M0 공용 컴포넌트 재사용, DESIGN.md 밖 스타일 금지
+- 갤러리 넘김·닫기 로직은 TDD, 썸네일 → 크게 보기 → 닫기 흐름은 Playwright e2e로 완료 기준을 테스트로 만든다
+```
+
+**2. 플랜 · 예시 · 일반**
+
+```text
+CLAUDE.md와 스펙(docs/superpowers/specs/<날짜>-moa-tax-design.md)을 읽어 줘.
+이번 세션 목표: M2 상담 문의 폼.
+/superpowers:writing-plans 로 M2만 플랜을 써 줘.
+- M0 공용 컴포넌트 재사용, DESIGN.md 밖 스타일 금지
+- 폼 검증 로직은 TDD, 문의 작성 → 전송 → 완료 안내 흐름은 Playwright e2e로 완료 기준을 테스트로 만든다
+```
+
+**2. 플랜 · 예시 · 책방**
 
 ```text
 CLAUDE.md와 스펙(docs/superpowers/specs/<날짜>-chaekbang-design.md)을 읽어 줘.
@@ -403,7 +723,7 @@ CLAUDE.md와 스펙(docs/superpowers/specs/<날짜>-chaekbang-design.md)을 읽�
 
 ```text
 /superpowers:verification-before-completion
-M2 완료 기준을 하나씩 실제 명령 출력과 375/1280 스크린샷으로 증명해 줘.
+M2 완료 기준을 하나씩 실제 명령 출력과 375/768/1280 스크린샷으로 증명해 줘.
 ```
 
 **6. 반려**
@@ -421,6 +741,7 @@ M2 완료 기준을 하나씩 실제 명령 출력과 375/1280 스크린샷으�
 **통과 조건 (마일스톤마다)**
 - [ ] 완료 기준을 전부 통과했다 (증거 확인)
 - [ ] 새 화면이 기존 화면과 같은 디자인 품질이다
+- [ ] 스펙의 마일스톤 목록에 완료 표시가 됐다
 - [ ] 병합하고 배포를 확인했다
 
 > ⚠️ "M2~M5 전부 해 줘"는 금지. 품질이 떨어지고 통합할 때 깨지는 가장 흔한 패턴입니다.
@@ -434,6 +755,32 @@ M2 완료 기준을 하나씩 실제 명령 출력과 375/1280 스크린샷으�
 1) "Lorem ipsum", "여기에…", 임시 이미지 위치를 전부 표로 뽑아 줘. 문구·사진은 내가 줄게
 2) 페이지별 title·description, OG(제목·설명·이미지), favicon을 siteConfig 값으로 연결해 줘
 ```
+
+**범용**
+
+```text
+/interfaces:better-writing
+버튼·안내·에러·빈 상태·404 문구를 PRODUCT.md 목소리((목소리))에 맞게 다시 써 줘.
+(바뀌면 안 되는 사실 정보)는 바꾸지 마.
+```
+
+**예시 · 게임**
+
+```text
+/interfaces:better-writing
+버튼·안내·에러·빈 상태·404 문구를 PRODUCT.md 목소리(짧고 힘 있게)에 맞게 다시 써 줘.
+출시일·지원 플랫폼·가격 같은 사실 정보는 바꾸지 마.
+```
+
+**예시 · 일반**
+
+```text
+/interfaces:better-writing
+버튼·안내·에러·빈 상태·404 문구를 PRODUCT.md 목소리(정중하고 명료하게)에 맞게 다시 써 줘.
+수수료·영업시간·자격 정보 같은 사실 정보는 바꾸지 마.
+```
+
+**예시 · 책방**
 
 ```text
 /interfaces:better-writing
@@ -480,10 +827,14 @@ DESIGN.md 타입 스케일은 유지하고 한글 본문 줄간격·자간·제�
 | 드래그·스와이프·시트 | `/apple-design` |
 | 끊기거나 버벅임 | `/animation-performance` |
 
+모션의 기준은 4-6에서 정해 `DESIGN.md`에 있습니다. 여기서는 나중에 만든 페이지·컴포넌트를 같은 기준으로 맞춥니다.
+
 ```text
 /animate
-모임 카드가 스크롤로 보일 때 등장 모션을 넣을지 먼저 판단하고, 넣는다면 구현해 줘. prefers-reduced-motion 대응 필수.
+(컴포넌트)가 스크롤로 보일 때 등장 모션을 넣을지 먼저 판단하고, 넣는다면 DESIGN.md의 모션 기준에 맞춰 구현해 줘. prefers-reduced-motion 대응 필수.
 ```
+
+`(컴포넌트)` 예: 게임 = 스크린샷 카드 · 일반 = 서비스 카드 · 책방 = 모임 카드
 
 **9-3. 검사 — 보고서만**
 
@@ -495,6 +846,29 @@ DESIGN.md 타입 스케일은 유지하고 한글 본문 줄간격·자간·제�
 ```text
 /hallmark audit <페이지 경로>
 ```
+
+**범용**
+
+```text
+/break-ui (컴포넌트)
+(가장 긴 값, 빈 값, 아주 많은 개수, 다른 언어)로 깨지는 곳을 찾아 줘.
+```
+
+**예시 · 게임**
+
+```text
+/break-ui 스크린샷 갤러리
+스크린샷 1장, 40장, 세로로 긴 이미지, 설명 300자, 일본어 텍스트로 깨지는 곳을 찾아 줘.
+```
+
+**예시 · 일반**
+
+```text
+/break-ui 수수료 표
+항목 이름 40자, 금액 9자리, 항목 0개, 항목 30개로 깨지는 곳을 찾아 줘.
+```
+
+**예시 · 책방**
 
 ```text
 /break-ui 모임 카드
@@ -517,8 +891,10 @@ WCAG 2.2 기준으로 키보드 이동·포커스·ARIA·대비를 점검하고 
 **9-5. 마감** — 하나씩 차례로
 
 ```text
-/impeccable:impeccable harden 예약 폼
+/impeccable:impeccable harden (폼·핵심 컴포넌트)
 ```
+
+`(폼·핵심 컴포넌트)` 예: 게임 = 출시 알림 신청 폼 · 일반 = 상담 문의 폼 · 책방 = 예약 폼
 
 ```text
 /impeccable:impeccable adapt
@@ -624,19 +1000,25 @@ DESIGN.md에 없는 색·폰트를 썼어. 토큰으로 되돌려 줘.
 - `grill-with-docs`: `~/.claude/skills/grill-with-docs/SKILL.md` — `disable-model-invocation: true`, grilling + domain-modeling 호출 지시
 - grilling(라운드·추천 답·"yes" 채택·사실 조사는 Claude 몫), domain-modeling(`GLOSSARY.md`, `docs/adr/`, ADR 세 조건): 각 `SKILL.md`
 - superpowers 6.4.2: README "The Basic Workflow"·설치 명령, brainstorming(세 경로·HARD-GATE·스펙 경로·다음 스킬은 writing-plans뿐), writing-plans(플랜 경로·실행 방식 두 가지), subagent-driven-development·executing-plans(연속 실행), using-superpowers(사용자 지시 우선)
-- superpowers 활성 상태: 동기화 meta `installation_preference: available`, `settings.json` enabledPlugins에 없음
+- superpowers 활성 상태(2026-11-15 다시 측정): 현재 세션 스킬 목록에 `superpowers:*` 있음, 스킬 파일은 `~/.claude/plugins/synced/` 아래
+- 스펙·플랜의 범위(2026-11-15): brainstorming `SKILL.md`(스펙은 구조·컴포넌트·데이터 흐름·에러 처리·테스트를 다룸), writing-plans `SKILL.md`(플랜 머리말에 스펙 경로와 전역 제약, 실행자는 플랜과 스펙을 함께 읽음)
 - Hallmark 2.0.0: `SKILL.md`(design.md·DESIGN.md를 잠긴 기준으로 읽음, URL을 제품 신호로 읽음, 빠른 모드 신호, 자료 질문), `references/design-md.md`(lock은 기존 파일을 덮어쓰지 않음), `references/flow.md`(hook은 install-hook.mjs 실행 시에만)
+- impeccable `reference/shape.md`(2026-11-15): 기획을 채팅에 제시해 확인받고 멈춤, 코드를 쓰지 않음
 - impeccable 4.8.0: 명령 표, `reference/init.md`(문서 선확인, 미감 질문 안 함), `reference/document.md`(기존 DESIGN.md는 묻고 갱신)
-- ui-ux-pro-max 2.15.0: `search.py` 옵션(`--design-system`, `--persist`, `--project-name`, `--force`, `--variance/--motion/--density`)
+- ui-ux-pro-max 2.15.0: `search.py` 옵션(`--design-system`, `--persist`, `--project-name`, `--force`, `--variance/--motion/--density`, 세 값 모두 1~10)
 
 **검색 확인**
 - superpowers: [obra/superpowers](https://github.com/obra/superpowers), [설치·흐름 가이드](https://www.developersdigest.tech/blog/claude-code-superpowers-plugin-guide)
 - grill-with-docs: [AI Hero](https://www.aihero.dev/grill-with-docs), [skills.sh](https://skills.sh/mattpocock/skills/grill-with-docs)
 - Claude Code 공식 권장(탐색 → 계획 → 구현 → 커밋, 짧은 CLAUDE.md, 작업 사이 컨텍스트 비우기): [Best Practices](https://code.claude.com/docs/en/best-practices)
 - Hallmark: [Nutlope/hallmark](https://github.com/Nutlope/hallmark)
+- 세션 중 모델 전환(`/model`): [Claude Code 모델 설정](https://docs.anthropic.com/en/docs/claude-code/model-config), [전환 미반영 버그 보고](https://claudeissues.com/issue/73881-mid-session-model-switch-not-applied-ui-shows-the-new-model-session-keeps-runnin)
 
 **추측 (직접 검증 안 함)**
 - 이 순서 전체를 처음부터 끝까지 실제로 돌려 보지는 않았습니다.
+- 게임·일반 예시 프롬프트는 실제로 실행해 보지 않았습니다. Hallmark가 `cinematic`·`trustworthy` 같은 톤 단어를 어떻게 읽는지도 확인하지 않았습니다.
+- 웹게임에서 달라지는 점 세 가지
+- 세션 A·B·C의 모델 배분, shape가 저장 요청을 따르는지, 핵심 컴포넌트 보강의 효과
 - "브레인스토밍 없이 진행" 문구로 superpowers 자동 호출이 멈추는지 (사용자 지시 우선 조항에 근거한 추론)
 - 한국어 "빠르게·대충·시안"도 Hallmark 빠른 모드를 켜는지
 - Hallmark가 프레임워크 프로젝트 안에서 실제 라우트로 빌드하는 방식

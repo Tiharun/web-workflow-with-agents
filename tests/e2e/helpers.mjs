@@ -93,7 +93,8 @@ export async function contrastFailures(page, { scroll = true } = {}) {
     if (scroll) { await page.evaluate((y) => scrollTo({ top: y, behavior: 'instant' }), i * step); await twoFrames(page); }
     const targets = await page.evaluate(collectTextTargets);
     if (!targets.length) continue;
-    const hide = await page.addStyleTag({ content: '*, *::before, *::after { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; }' });
+    // 밑줄도 글자의 일부다. 색을 따로 준 밑줄(링크)이 남으면 배경의 어두운 픽셀로 잡혀 대비가 낮게 나온다(측정: 2.55).
+    const hide = await page.addStyleTag({ content: '*, *::before, *::after { color: transparent !important; -webkit-text-fill-color: transparent !important; text-shadow: none !important; text-decoration-color: transparent !important; }' });
     const png = await page.screenshot({ scale: 'css', animations: 'disabled', caret: 'hide' });
     await hide.evaluate((n) => n.remove());
     for (const f of await page.evaluate(sampleContrast, { png: png.toString('base64'), targets })) failures.add(f);
