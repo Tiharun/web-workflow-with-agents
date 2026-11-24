@@ -187,7 +187,7 @@ docs/INDEX.md와 거기 적힌 문서를 먼저 읽어 줘. 이번 세션 목표
 - 6단계부터는 마일스톤마다 새 세션이고 `CLAUDE.md`가 자동으로 읽힙니다.
 
 **테스트 자원 문서 작성**
-
+<!-- - RAM: 테스트 합계 12GB. 단, 시작 전 가용 메모리에서 6GB를 뺀 값이 12GB보다 작으면 그 값으로 줄인다. -->
 ```text
 아래의 규칙을 `docs/test-resources.md`에 넣어서 문서를 만들어.
 
@@ -202,7 +202,7 @@ docs/INDEX.md와 거기 적힌 문서를 먼저 읽어 줘. 이번 세션 목표
 
 ## 예산
 - CPU: 테스트에 쓰는 프로세스 합계 10스레드
-- RAM: 테스트 합계 12GB. 단, 시작 전 가용 메모리에서 6GB를 뺀 값이 12GB보다 작으면 그 값으로 줄인다.
+- RAM: 테스트 합계 8GB
   가용 메모리 확인: `[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB,1)` (GB)
 
 ## 단가 (보수적으로 잡은 1개당 예상 최대치)
