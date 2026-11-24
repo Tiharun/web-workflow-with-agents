@@ -16,7 +16,9 @@ for (const scheme of ['light', 'dark']) for (const width of [375, 1280]) {
         expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(' ')).join(', ')}`)).toEqual([]);
       });
       // axe는 그라데이션 배경 위 글자의 대비를 '판정 보류'로 넘긴다(final에서 420개, 측정). 그래서 직접 잰다.
+      // 반 화면씩 내려가며 재므로 문서 길이에 비례해 느려진다(final 375px 단독 26.6초, 측정).
       test(`text contrast meets AA on every background: ${s.name}`, async ({ page }) => {
+        test.slow();
         await s.open(page);
         expect(await contrastFailures(page, { scroll: !s.name.endsWith('-open') })).toEqual([]);
       });
