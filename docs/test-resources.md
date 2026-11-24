@@ -7,8 +7,6 @@
 
 ## 예산
 - CPU: 테스트에 쓰는 프로세스 합계 10스레드
-- RAM: 테스트 합계 8GB
-  가용 메모리 확인: `[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB,1)` (GB)
 
 ## 단가 (보수적으로 잡은 1개당 예상 최대치)
 | 단위 | CPU | RAM |
