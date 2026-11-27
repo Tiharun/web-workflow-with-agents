@@ -22,6 +22,7 @@
   - 브라우저: 콘솔 오류 0(chrome-devtools-mcp), Lighthouse 성능·접근성 90 이상
 
 ## 문서 지도
+- `docs/basic-work-rules.md` — 기본 작업 규칙이다. 이 규칙을 지켜 작업한다
 - `docs/brief.md` — 목적·기능·세부 규칙·완료 기준. 결정이 바뀌면 여기부터 고친다
 - `GLOSSARY.md` — 용어 정의. 코드·문서의 이름은 여기를 따른다
 - `docs/adr/` — 되돌리기 어려운 결정 기록(md 런타임 렌더, 해시 라우팅, 프레임워크 없음)
