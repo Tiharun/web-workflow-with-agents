@@ -591,7 +591,7 @@ gh repo view "$(gh api user -q .login)/claude-test-sandbox" --json visibility -q
 ````
 프로젝트 폴더에 넣고 `CLAUDE.md`나 다른 문서들에 넣고 연결되어 작업마다 읽히게 한다.
 ```text
-기본적인 전체 작업 규칙은 `basic-work-rules.md` 대로 진행되게 만들거나 프로젝트 `CLAUDE.md`를 만들고 경로 포인터로 연결해서 문서가 자동으로 읽히게 만들어.
+기본적인 전체 작업 규칙은 `basic-work-rules.md`대로 진행되게 만들거나 프로젝트 `CLAUDE.md`를 만들고 포인터로 연결해서 문서가 자동으로 읽히게 만들어.
 ```
 
 **프로젝트 준비**
